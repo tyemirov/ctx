@@ -64,14 +64,15 @@ Plan the execution and consider the discovery phase (we can use an llm client or
 Dependencies processed: 0 (written: 0, skipped: 0, failed: 0)
 ```
     - Automatically fall back to JavaScript `devDependencies` when runtime dependencies are absent and added regression coverage for the fallback plus the explicit `--include-dev` path so dev-only repos surface documentation.
-- [ ] [CT-301] `go run ./...` shall work and invoke our cmd/ctx/main.go. Eliminate the duplication and make sure that it works
+- [ ] [CT-301] `go run ./...` shall work and invoke our cmd/ctx/main.go.  make sure that both scenarios work without errors:
+1. go run ./...
 ```
 12:11:44 tyemirov@Vadyms-MacBook-Pro:~/Development/tyemirov/ctx - [bugfix/CT-300-js-discover-root] $ go run ./...
 go: pattern ./... matches multiple packages:
         github.com/tyemirov/ctx
         github.com/tyemirov/ctx/cmd/ctx
 ```
-Retain an ability to install, e.g. `go install github.com/tyemirov/ctx@latest` must work
+2. Retain an ability to install, e.g. `go install github.com/tyemirov/ctx@latest` must work
 
 ## Maintenance (400–499)
 

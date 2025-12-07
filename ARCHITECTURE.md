@@ -6,7 +6,8 @@ how the CLI is assembled or when you are extending the codebase.
 
 ## Package Layout
 
-- `cmd/ctx`: process entry point; builds the zap logger and delegates to the CLI layer.
+- `main.go`: module-root entry point so `go install github.com/tyemirov/ctx@latest` and `go run ./...` both invoke the same binary.
+- `cmd/ctx`: CLI bootstrap invoked by `main.go`; builds the zap logger and delegates to the CLI layer.
 - `internal/cli`: Cobra command wiring, configuration loading, boolean flag normalisation, clipboard control, MCP server
   bootstrap, and documentation orchestration.
 - `internal/commands`: filesystem traversal (`TreeBuilder`, `StreamTree`), content streaming (`StreamContent`), and
@@ -29,7 +30,7 @@ how the CLI is assembled or when you are extending the codebase.
 
 ## Runtime Overview
 
-- `cmd/ctx` constructs a console zap logger via `utils.NewApplicationLogger` and calls `cli.Execute()`.
+- `main.go` calls `cmd/ctx.Run`, which constructs a console zap logger via `utils.NewApplicationLogger` and invokes `cli.Execute()`.
 - `internal/cli` builds the Cobra root command, registers subcommands, and applies configuration defaults once per run.
   It normalises boolean flags (`boolean_flag.go`), coordinates streaming via `errgroup.Group`, and owns clipboard
   dispatch after rendering completes.
@@ -186,7 +187,7 @@ requests fail fast with contextual errors when the platform is unsupported. Pers
 ## Error Handling and Logging
 
 - All command execution flows return `error`; the CLI wraps failures with contextual `fmt.Errorf("…: %w")` messages.
-- `cmd/ctx` panics only when the zap logger cannot be initialised. Runtime errors render as fatal log entries with
+- `cmd/ctx.Run` panics only when the zap logger cannot be initialised. Runtime errors render as fatal log entries with
   `utils.ApplicationExecutionFailedMessage`.
 - Streaming pipelines capture warning events (missing files, token counting failures, binary skips) without halting the
   command.

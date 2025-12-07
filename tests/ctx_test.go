@@ -53,7 +53,7 @@ const (
 	claspConfigurationContent = "{\"scriptId\":\"1\"}"
 	// googleSheetsAddonGitignoreContent combines ignore rules for the add-on fixture.
 	googleSheetsAddonGitignoreContent = nodeModulesPattern + claspConfigurationPattern
-	commandDirectoryRelativePath      = "cmd/ctx"
+	commandDirectoryRelativePath      = "."
 	integrationBinaryBaseName         = "ctx_integration_binary"
 	contentDataFunction               = "github.com/tyemirov/ctx/internal/commands.GetContentData"
 	streamContentFunction             = "github.com/tyemirov/ctx/internal/commands.StreamContent"
@@ -1933,5 +1933,25 @@ func TestCTX(testingHandle *testing.T) {
 
 			testCase.validate(t, output)
 		})
+	}
+}
+
+// TestGoRunAllPackagesInvokesRootCommand ensures `go run ./...` executes the CLI entrypoint.
+func TestGoRunAllPackagesInvokesRootCommand(testingHandle *testing.T) {
+	moduleRoot := getModuleRoot(testingHandle)
+	command := exec.Command("go", "run", "./...", versionFlag)
+	command.Dir = moduleRoot
+
+	var stdoutBuffer, stderrBuffer bytes.Buffer
+	command.Stdout = &stdoutBuffer
+	command.Stderr = &stderrBuffer
+
+	if runError := command.Run(); runError != nil {
+		testingHandle.Fatalf("`go run ./...` failed: %v\nstdout:\n%s\nstderr:\n%s", runError, stdoutBuffer.String(), stderrBuffer.String())
+	}
+
+	const prefix = "ctx version:"
+	if !strings.HasPrefix(stdoutBuffer.String(), prefix) {
+		testingHandle.Fatalf("expected version output to start with %q\n%s", prefix, stdoutBuffer.String())
 	}
 }

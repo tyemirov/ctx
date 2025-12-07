@@ -1,4 +1,4 @@
-package main
+package ctxcmd
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"github.com/tyemirov/ctx/internal/utils"
 )
 
-// main is the entry point for the ctx command.
-func main() {
+// Run bootstraps the ctx CLI with logging.
+func Run() {
 	loggerInstance, loggerInitializationError := utils.NewApplicationLogger()
 	if loggerInitializationError != nil {
 		panic(fmt.Errorf(utils.LoggerInitializationFailedMessageFormat, loggerInitializationError))

@@ -1,20 +1,8 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/tyemirov/ctx/internal/cli"
-	"github.com/tyemirov/ctx/internal/utils"
-)
+import ctxcmd "github.com/tyemirov/ctx/cmd/ctx"
 
 // main is the entry point for the ctx application.
 func main() {
-	loggerInstance, loggerInitializationError := utils.NewApplicationLogger()
-	if loggerInitializationError != nil {
-		panic(fmt.Errorf(utils.LoggerInitializationFailedMessageFormat, loggerInitializationError))
-	}
-	defer loggerInstance.Sync()
-	if executeError := cli.Execute(); executeError != nil {
-		loggerInstance.Fatal(utils.ApplicationExecutionFailedMessage + ": " + executeError.Error())
-	}
+	ctxcmd.Run()
 }

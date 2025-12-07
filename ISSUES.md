@@ -71,6 +71,7 @@ go: pattern ./... matches multiple packages:
         github.com/tyemirov/ctx
         github.com/tyemirov/ctx/cmd/ctx
 ```
+Retain an ability to install, e.g. `go install github.com/tyemirov/ctx@latest` must work
 
 ## Maintenance (400–499)
 

@@ -1,6 +1,6 @@
 # ctx
 
-[![GitHub release](https://img.shields.io/github/release/temirov/ctx.svg)](https://github.com/tyemirov/ctx/releases)
+[![GitHub release](https://img.shields.io/github/release/tyemirov/ctx.svg)](https://github.com/tyemirov/ctx/releases)
 
 `ctx` helps you explore a project from the terminal. List directory trees, read source files with optional embedded
 documentation, analyse call chains, or fetch documentation straight from GitHub—all with a single CLI.

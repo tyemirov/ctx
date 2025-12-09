@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>ctx — Context for Your Codebase in One Command</title>
+    <meta
+      name="description"
+      content="ctx turns any repository into a focused context bundle for humans and AI tools: trees, content, call chains, and documentation in a single CLI."
+    />
+
+    <!-- mpr-ui design system -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/MarcoPoloResearchLab/mpr-ui@latest/mpr-ui.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/MarcoPoloResearchLab/mpr-ui@latest/mpr-ui.js"
+    ></script>
+
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: radial-gradient(circle at top, #0b1020 0, #02030a 55%);
+        color: #f5f5f5;
+      }
+
+      main {
+        max-width: 75rem;
+        margin: 4rem auto 5rem;
+        padding: 0 1.5rem;
+      }
+
+      .hero {
+        margin-bottom: 3.5rem;
+      }
+
+      .hero-eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
+
+      .hero-title {
+        font-size: clamp(2.5rem, 4vw, 3.5rem);
+        line-height: 1.1;
+        margin: 0.6rem 0 1rem;
+      }
+
+      .hero-title span {
+        background: linear-gradient(120deg, #39e9b4, #8ee3ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero-tagline {
+        font-size: 1.1rem;
+        max-width: 40rem;
+        opacity: 0.9;
+      }
+
+      .hero-actions {
+        margin-top: 1.7rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.8rem 1.5rem;
+        border-radius: 999px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease,
+          background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .button-primary {
+        background: linear-gradient(135deg, #39e9b4, #1ec5ff);
+        color: #020308;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      }
+
+      .button-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      }
+
+      .button-secondary {
+        background: transparent;
+        color: #e4e4e4;
+        border-color: rgba(148, 163, 184, 0.7);
+      }
+
+      .button-secondary:hover {
+        background: rgba(15, 23, 42, 0.7);
+      }
+
+      .button-mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.7);
+      }
+
+      .pill-badge {
+        display: inline-block;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: #39e9b4;
+      }
+
+      .layout-grid {
+        display: grid;
+        gap: 2.25rem;
+      }
+
+      .layout-2col {
+        display: grid;
+        gap: 2.25rem;
+      }
+
+      .section-label {
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.7;
+        margin-bottom: 0.5rem;
+      }
+
+      .section-title {
+        font-size: 1.6rem;
+        margin: 0 0 0.6rem;
+      }
+
+      .section-body {
+        font-size: 0.98rem;
+        line-height: 1.6;
+        opacity: 0.9;
+      }
+
+      .card-grid {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .card {
+        border-radius: 1.1rem;
+        padding: 1.25rem 1.4rem;
+        background: radial-gradient(circle at top left, #0f172a 0, #020617 55%);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      .card h3 {
+        font-size: 1.05rem;
+        margin: 0 0 0.4rem;
+      }
+
+      .card p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        opacity: 0.9;
+      }
+
+      .card-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(55, 65, 81, 0.8);
+        margin-bottom: 0.6rem;
+      }
+
+      .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0;
+      }
+
+      .feature-list li::before {
+        content: "›";
+        display: inline-block;
+        margin-right: 0.4rem;
+        color: #39e9b4;
+      }
+
+      .feature-list li {
+        margin-bottom: 0.35rem;
+        font-size: 0.95rem;
+        opacity: 0.95;
+      }
+
+      .command-name {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        background: rgba(15, 23, 42, 0.9);
+        border-radius: 999px;
+        padding: 0.15rem 0.55rem;
+        font-size: 0.78rem;
+      }
+
+      .command-name strong {
+        font-weight: 600;
+      }
+
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+      }
+
+      .workflow-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .workflow-list li {
+        margin-bottom: 0.75rem;
+        font-size: 0.96rem;
+        line-height: 1.6;
+      }
+
+      .workflow-list strong {
+        font-weight: 600;
+      }
+
+      .divider {
+        margin: 3.5rem 0 2.5rem;
+        border: 0;
+        border-top: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      @media (min-width: 48rem) {
+        .layout-2col {
+          grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+          align-items: start;
+        }
+
+        .card-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 72rem) {
+        main {
+          margin-top: 5rem;
+          margin-bottom: 6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <div class="pill">
+          <span class="pill-badge" aria-hidden="true"></span>
+          Proven in day-to-day engineering workflows
+        </div>
+        <p class="hero-eyebrow">CLI for high-signal code context</p>
+        <h1 class="hero-title">
+          <span>ctx</span> turns any repo into a context pack for you and your
+          AI tools.
+        </h1>
+        <p class="hero-tagline">
+          Stop copy‑pasting trees and snippets. ctx walks your codebase once and
+          streams a precise, compact view of the files, call chains, and docs
+          you actually care about — ready for reviews, refactors, and AI
+          sessions.
+        </p>
+
+        <div class="hero-actions">
+          <a
+            class="button button-primary"
+            href="https://github.com/tyemirov/ctx"
+          >
+            View project on GitHub
+          </a>
+          <a
+            class="button button-secondary button-mono"
+            href="https://github.com/tyemirov/ctx#installation"
+          >
+            <span>go install github.com/tyemirov/ctx@latest</span>
+          </a>
+        </div>
+      </header>
+
+      <section class="layout-grid" aria-label="Why teams use ctx">
+        <div>
+          <p class="section-label">Why ctx</p>
+          <h2 class="section-title">Built for engineers, friendly to agents</h2>
+          <p class="section-body">
+            ctx is a small Go binary designed to be the “context generator” for
+            your day‑to‑day work. It understands directory trees, call chains,
+            documentation, and token budgets so you don’t have to maintain ad‑hoc
+            scripts or huge copy‑paste buffers when pairing with an LLM.
+          </p>
+        </div>
+
+        <div class="card-grid">
+          <article class="card">
+            <p class="card-tag">For humans</p>
+            <h3>Fast, focused code reading</h3>
+            <p>
+              Jump into unfamiliar repositories with a clear tree view,
+              immediate file content, and cross‑referenced call chains. ctx
+              keeps the noise down so you can reason about behaviour instead of
+              fighting the file system.
+            </p>
+          </article>
+
+          <article class="card">
+            <p class="card-tag">For AI workflows</p>
+            <h3>High‑signal prompts without manual curation</h3>
+            <p>
+              Feed agents and chat models a compact, structured snapshot of the
+              code that matters. ctx estimates tokens, respects ignore rules,
+              and can enrich content with documentation to keep prompts sharp
+              and affordable.
+            </p>
+          </article>
+
+          <article class="card">
+            <p class="card-tag">For teams</p>
+            <h3>Repeatable, scriptable context</h3>
+            <p>
+              Capture onboarding, debugging, and release review workflows in a
+              single command you can commit to the repo. Everyone runs the same
+              ctx invocation and gets the same trustworthy view.
+            </p>
+          </article>
+
+          <article class="card">
+            <p class="card-tag">For automation</p>
+            <h3>MCP &amp; CI ready</h3>
+            <p>
+              Use ctx as a standalone CLI or run it as an MCP server so agents
+              can ask for trees, content, and docs on demand. Integrate it into
+              CI to snapshot context for regression investigations or release
+              notes.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <section class="layout-2col" aria-label="What ctx understands about your code">
+        <div>
+          <p class="section-label">Core capabilities</p>
+          <h2 class="section-title">Four commands, one mental model</h2>
+          <p class="section-body">
+            ctx is intentionally small. Each command focuses on a single kind of
+            context, and all of them share the same ignore rules, output
+            formats, and documentation settings.
+          </p>
+          <ul class="feature-list">
+            <li>Respects <span class="mono">.gitignore</span> and
+              <span class="mono">.ignore</span> files at every directory level.</li>
+            <li>Streams output so large repositories stay responsive.</li>
+            <li>Generates Toon, JSON, or XML output for humans and machines.</li>
+            <li>Optional documentation enrichment for local and remote packages.</li>
+          </ul>
+        </div>
+
+        <div class="card-grid">
+          <article class="card">
+            <div class="command-name">
+              <strong>ctx tree</strong>
+            </div>
+            <h3>See the structure, not just the size</h3>
+            <p>
+              Summarize repositories, filter out generated noise, and get
+              per‑directory token estimates. Ideal for onboarding, PR reviews,
+              and “what even is this repo?” moments.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="command-name">
+              <strong>ctx content</strong>
+            </div>
+            <h3>Stream the files that matter</h3>
+            <p>
+              Dump the exact subset of files you care about — by directory,
+              glob, or explicit path — with optional embedded docs. Perfect for
+              feeding into an LLM or attaching to a ticket.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="command-name">
+              <strong>ctx callchain</strong>
+            </div>
+            <h3>Follow behaviour through the stack</h3>
+            <p>
+              Explore who calls what without opening an IDE. ctx traces call
+              chains through Go packages and presents them in a compact,
+              streaming view.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="command-name">
+              <strong>ctx doc</strong>
+            </div>
+            <h3>Harvest real documentation</h3>
+            <p>
+              Discover READMEs and external docs for your dependencies (Go,
+              JavaScript, Python) and emit them alongside your code context so
+              humans and AI always see the “why”, not just the “what”.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <section aria-label="How ctx fits into your workflow">
+        <p class="section-label">Workflows</p>
+        <h2 class="section-title">Drop ctx into your existing tooling</h2>
+        <p class="section-body">
+          ctx is designed to live next to your editor, issue tracker, and agent
+          stack. You decide how much context to collect; ctx keeps it consistent
+          and reproducible.
+        </p>
+        <ul class="workflow-list">
+          <li>
+            <strong>Code review companion.</strong>
+            Attach a ctx tree + content snapshot to tricky pull requests so
+            reviewers see the full picture of the change, including upstream
+            callers and downstream docs.
+          </li>
+          <li>
+            <strong>Onboarding accelerator.</strong>
+            Commit a
+            <span class="mono">docs/ctx-onboarding.sh</span>
+            script that runs your preferred ctx command set, giving new team
+            members a curated tour of the codebase in minutes.
+          </li>
+          <li>
+            <strong>Agent context generator.</strong>
+            Wire ctx into your MCP or CLI agent so it can ask for high‑signal
+            trees, call chains, and docs instead of scraping raw directories.
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <mpr-footer
+      prefix-text="Built with ctx and mpr-ui"
+      links-collection='{
+        "style": "drop-up",
+        "text": "Built by Marco Polo Research Lab",
+        "links": [
+          { "label": "Marco Polo Research Lab", "url": "https://mprlab.com" },
+          { "label": "Gravity Notes", "url": "https://gravity.mprlab.com" },
+          { "label": "LoopAware", "url": "https://loopaware.mprlab.com" },
+          { "label": "Allergy Wheel", "url": "https://allergy.mprlab.com" },
+          { "label": "Social Threader", "url": "https://threader.mprlab.com" },
+          { "label": "RSVP", "url": "https://rsvp.mprlab.com" },
+          { "label": "Countdown Calendar", "url": "https://countdown.mprlab.com" },
+          { "label": "LLM Crossword", "url": "https://llm-crossword.mprlab.com" },
+          { "label": "Prompt Bubbles", "url": "https://prompts.mprlab.com" },
+          { "label": "Wallpapers", "url": "https://wallpapers.mprlab.com" },
+          { "label": "GIX", "url": "https://gix.mprlab.com" }
+        ]
+      }'
+      privacy-link-label="MIT License"
+      privacy-modal-content="
+        &lt;h1&gt;MIT License — ctx&lt;/h1&gt;
+        &lt;p&gt;&lt;strong&gt;Copyright (c) 2025&lt;/strong&gt;
+        Vadym Tyemirov&lt;/p&gt;
+        &lt;p&gt;Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the &quot;Software&quot;), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:&lt;/p&gt;
+        &lt;p&gt;The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.&lt;/p&gt;
+        &lt;p&gt;THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.&lt;/p&gt;
+      "
+      sticky="false"
+    >
+    </mpr-footer>
+  </body>
+</html>

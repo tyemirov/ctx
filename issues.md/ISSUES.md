@@ -16,10 +16,11 @@ Each issue is formatted as `- [ ] [CT-<number>]`. When resolved it becomes `- [x
     2. Use the LLM integration available in @tools/gix package to query LLMs
     3. Consider that the documents can be lengthy and we shall not alter them, but remove fluff only
 
-- [ ] [CT-104] Add a website documenting all of the benefits the ctx utility has. The web site shall be served from github so follow the convention for folders/file placement.
+- [x] [CT-104] Add a website documenting all of the benefits the ctx utility has. The web site shall be served from github so follow the convention for folders/file placement.
 1. Use docs/index.html so that GitHub can easily find it
 2. Prepare the content as a technical sales person appealing to the end user
 3. Use mpr-ui library and leverage footer from it @tools/mpr-ui/docs/custom-elements.md, @tools/mpr-ui/README.md
+    - Added a marketing-focused `docs/index.html` that introduces ctx, highlights its core commands and workflows, and integrates the `mpr-ui` footer via the CDN bundle so GitHub Pages can serve a polished, static documentation site.
 
 ## Improvements (213–299)
 

@@ -287,8 +287,107 @@ func TestTreeMatchesContentWithoutContentAcrossFormats(t *testing.T) {
 	}
 }
 
+func TestBundleBuildsGoalOrientedContext(t *testing.T) {
+	binary := buildBinary(t)
+	workingDir := setupTestDirectory(t, map[string]string{
+		"AGENTS.md":         "Read .mprlab/POLICY.md before changing code.\n",
+		".mprlab/POLICY.md": "Forward-only validation through integration tests.\n",
+		".mprlab/ISSUES.md": "- [ ] Add paste dropdown context for the new button.\n",
+		".mprlab/PLAN.md":   "- [ ] Build a context bundle before execution.\n",
+		"static/app/index.html": `<button id="new-issue">New</button>
+<button id="paste-issue">Paste from clipboard</button>
+`,
+		"static/js/app.js": `export function renderPasteDropdown() {
+  return "paste dropdown context builder for new issue";
+}
+
+export function preserveNewIssueAction() {
+  return renderPasteDropdown();
+}
+`,
+		"static/js/__tests__/app.test.js": `import { renderPasteDropdown } from "../app.js";
+
+test("paste dropdown remains attached to the new issue button", () => {
+  expect(renderPasteDropdown()).toContain("paste dropdown");
+});
+`,
+		"docs/paste-dropdown-notes.md": "Paste dropdown notes are supporting documentation, not the primary implementation surface.\n",
+		"CHANGELOG.md":                 "Historical paste dropdown release note.\n",
+	})
+	request := appTypes.ContextBundleRequest{
+		RepositoryRoot:    workingDir,
+		IssueDocumentPath: ".mprlab/ISSUES.md",
+		PlanDocumentPath:  ".mprlab/PLAN.md",
+		MaxTokens:         12000,
+		Model:             "gpt-4o",
+		Goal: appTypes.ContextBundleGoal{
+			ID:       "B019",
+			Kind:     "BugFix",
+			Title:    "Add Paste as a dropdown option on the New button",
+			Body:     "The execution agent needs focused frontend context for the paste dropdown and its rendered integration tests.",
+			Category: "BugFixes",
+		},
+	}
+	requestBytes, marshalErr := json.Marshal(request)
+	if marshalErr != nil {
+		t.Fatalf("marshal request: %v", marshalErr)
+	}
+	requestPath := filepath.Join(workingDir, "context-request.json")
+	if writeErr := os.WriteFile(requestPath, requestBytes, 0o644); writeErr != nil {
+		t.Fatalf("write request: %v", writeErr)
+	}
+
+	jsonOutput := runCommand(t, binary, []string{appTypes.CommandBundle, "--request", requestPath, "--format", appTypes.FormatJSON}, workingDir)
+	var bundle appTypes.ContextBundleOutput
+	if decodeErr := json.Unmarshal([]byte(jsonOutput), &bundle); decodeErr != nil {
+		t.Fatalf("decode bundle json: %v\n%s", decodeErr, jsonOutput)
+	}
+	if bundle.Version != 1 {
+		t.Fatalf("expected bundle version 1, got %d", bundle.Version)
+	}
+	for _, expectedContract := range []string{"AGENTS.md", ".mprlab/POLICY.md", ".mprlab/ISSUES.md", ".mprlab/PLAN.md"} {
+		if !bundleHasItem(bundle.Contracts, expectedContract) {
+			t.Fatalf("expected contract %s in bundle contracts: %+v", expectedContract, bundle.Contracts)
+		}
+	}
+	if !bundleHasItem(bundle.Files, "static/js/app.js") {
+		t.Fatalf("expected implementation file in bundle files: %+v", bundle.Files)
+	}
+	if !bundleHasItem(bundle.Files, "static/js/__tests__/app.test.js") {
+		t.Fatalf("expected integration test file in bundle files: %+v", bundle.Files)
+	}
+	if !bundleHasSymbol(bundle.Symbols, "static/js/app.js", "renderPasteDropdown") {
+		t.Fatalf("expected renderPasteDropdown symbol in bundle symbols: %+v", bundle.Symbols)
+	}
+
+	toonOutput := runCommand(t, binary, []string{appTypes.CommandBundle, "--request", requestPath, "--format", appTypes.FormatToon}, workingDir)
+	for _, snippet := range []string{"contextBundle:", "contracts[", "files[", "symbols["} {
+		if !strings.Contains(toonOutput, snippet) {
+			t.Fatalf("expected TOON output to contain %q\n%s", snippet, toonOutput)
+		}
+	}
+}
+
 func decodeJSONFiles(t *testing.T, data string) []appTypes.TreeOutputNode {
 	return flattenFileNodes(decodeJSONRoots(t, data))
+}
+
+func bundleHasItem(items []appTypes.ContextBundleItem, path string) bool {
+	for _, item := range items {
+		if item.Path == path {
+			return true
+		}
+	}
+	return false
+}
+
+func bundleHasSymbol(symbols []appTypes.ContextBundleSymbol, path string, name string) bool {
+	for _, symbol := range symbols {
+		if symbol.Path == path && symbol.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 func decodeXMLFiles(t *testing.T, data string) []appTypes.TreeOutputNode {

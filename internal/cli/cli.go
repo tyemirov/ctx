@@ -74,12 +74,14 @@ Use --format to select toon, raw, json, or xml output. Use --doc to include docu
 	treeUse                   = "tree [paths...]"
 	contentUse                = "content [paths...]"
 	callchainUse              = "callchain <function>"
+	bundleUse                 = "bundle"
 	treeAlias                 = "t"
 	contentAlias              = "c"
 	callchainAlias            = "cc"
 	treeShortDescription      = "display directory tree (" + treeAlias + ")"
 	contentShortDescription   = "show file contents (" + contentAlias + ")"
 	callchainShortDescription = "analyze call chains (" + callchainAlias + ")"
+	bundleShortDescription    = "build goal-oriented execution context"
 
 	// treeLongDescription provides detailed help for the tree command.
 	treeLongDescription = `List directories and files for one or more paths.
@@ -110,6 +112,11 @@ Use --depth to control traversal depth, --format for output selection, and --doc
 
   # Produce XML output including documentation
   ctx callchain mypkg.MyFunc --format xml --doc`
+
+	bundleLongDescription = `Build a goal-oriented repository context bundle from a JSON request.
+The bundle command emits the canonical context contract used by agentic execution. It supports json and toon output.`
+	bundleUsageExample = `  # Render an execution context bundle in TOON
+  ctx bundle --request /tmp/context-request.json --format toon`
 
 	docUse              = "doc"
 	docAlias            = "d"
@@ -158,6 +165,8 @@ Provide an optional path argument or --root to set the project directory. Use --
 	docDiscoverPyPIBaseFlagName        = "pypi-registry-base"
 	docDiscoverFormatDescription       = "output format (text|json)"
 	docDiscoverSummaryTemplate         = "Dependencies processed: %d (written: %d, skipped: %d, failed: %d)\n"
+	bundleRequestFlagName              = "request"
+	bundleRequestFlagDescription       = "path to the context bundle request JSON"
 
 	docWebDepthFlagName    = "web-depth"
 	docWebDepthDescription = "maximum link depth for external pages (0-3); 0 fetches only the provided page"
@@ -207,6 +216,7 @@ Provide an optional path argument or --root to set the project directory. Use --
 	documentationFlagDescription    = "documentation mode (disabled|relevant|full)"
 	contentFlagDescription          = "include file content in output"
 	invalidFormatMessage            = "Invalid format value '%s'"
+	invalidBundleFormatMessage      = "bundle supports toon or json output"
 	invalidDocumentationModeMessage = "invalid documentation mode '%s'"
 	warningSkipPathFormat           = "Warning: skipping %s: %v\n"
 	warningTokenCountFormat         = "Warning: failed to count tokens for %s: %v\n"
@@ -336,6 +346,7 @@ func createRootCommand(clipboardProvider clipboard.Copier) *cobra.Command {
 		createTreeCommand(clipboardProvider, &copyFlagValue, &copyOnlyFlagValue, &applicationConfig),
 		createContentCommand(clipboardProvider, &copyFlagValue, &copyOnlyFlagValue, &applicationConfig),
 		createCallChainCommand(clipboardProvider, &copyFlagValue, &copyOnlyFlagValue, &applicationConfig, callChainService),
+		createBundleCommand(clipboardProvider, &copyFlagValue, &copyOnlyFlagValue),
 		createDocCommand(clipboardProvider, &copyFlagValue, &copyOnlyFlagValue, &applicationConfig),
 	)
 	rootCommand.InitDefaultHelpCmd()
@@ -641,6 +652,95 @@ func createCallChainCommand(clipboardProvider clipboard.Copier, copyFlag *bool, 
 		docsAPIFlag.Hidden = true
 	}
 	return callChainCommand
+}
+
+func createBundleCommand(clipboardProvider clipboard.Copier, copyFlag *bool, copyOnlyFlag *bool) *cobra.Command {
+	var outputFormat string = types.FormatToon
+	var requestPath string
+
+	bundleCommand := &cobra.Command{
+		Use:     bundleUse,
+		Short:   bundleShortDescription,
+		Long:    bundleLongDescription,
+		Example: bundleUsageExample,
+		Args:    cobra.NoArgs,
+		RunE: func(command *cobra.Command, arguments []string) error {
+			outputFormatLower := strings.ToLower(outputFormat)
+			if outputFormatLower != types.FormatToon && outputFormatLower != types.FormatJSON {
+				return fmt.Errorf(invalidBundleFormatMessage)
+			}
+			if strings.TrimSpace(requestPath) == "" {
+				return fmt.Errorf("%s is required", bundleRequestFlagName)
+			}
+			requestBytes, readErr := os.ReadFile(requestPath)
+			if readErr != nil {
+				return fmt.Errorf("read bundle request: %w", readErr)
+			}
+			var request types.ContextBundleRequest
+			if decodeErr := json.Unmarshal(requestBytes, &request); decodeErr != nil {
+				return fmt.Errorf("decode bundle request: %w", decodeErr)
+			}
+			if strings.TrimSpace(request.Model) == "" {
+				request.Model = defaultTokenizerModelName
+			}
+			counter, resolvedModel, counterErr := tokenizer.NewCounter(tokenizer.Config{
+				Model:            request.Model,
+				WorkingDirectory: request.RepositoryRoot,
+			})
+			if counterErr != nil {
+				if errors.Is(counterErr, tokenizer.ErrHelperUnavailable) {
+					return fmt.Errorf("token helper unavailable: %w", counterErr)
+				}
+				return counterErr
+			}
+			bundle, bundleErr := commands.BuildContextBundle(command.Context(), commands.ContextBundleOptions{
+				Request:      request,
+				TokenCounter: counter,
+				TokenModel:   resolvedModel,
+			})
+			if bundleErr != nil {
+				return bundleErr
+			}
+			renderedOutput := output.RenderContextBundleToon(bundle)
+			if outputFormatLower == types.FormatJSON {
+				renderedJSON, renderErr := output.RenderContextBundleJSON(bundle)
+				if renderErr != nil {
+					return renderErr
+				}
+				renderedOutput = renderedJSON
+			}
+			writer := command.OutOrStdout()
+			copyEnabled := copyFlag != nil && *copyFlag
+			copyOnlyEnabled := copyOnlyFlag != nil && *copyOnlyFlag
+			if copyOnlyEnabled {
+				copyEnabled = true
+			}
+			var clipboardBuffer *bytes.Buffer
+			if copyEnabled {
+				if clipboardProvider == nil {
+					return errors.New(clipboardServiceMissingMessage)
+				}
+				clipboardBuffer = &bytes.Buffer{}
+				if copyOnlyEnabled {
+					writer = clipboardBuffer
+				} else {
+					writer = io.MultiWriter(writer, clipboardBuffer)
+				}
+			}
+			if _, writeErr := fmt.Fprintln(writer, renderedOutput); writeErr != nil {
+				return writeErr
+			}
+			if clipboardBuffer != nil {
+				if copyErr := clipboardProvider.Copy(clipboardBuffer.String()); copyErr != nil {
+					return fmt.Errorf(clipboardCopyErrorFormat, copyErr)
+				}
+			}
+			return nil
+		},
+	}
+	bundleCommand.Flags().StringVar(&requestPath, bundleRequestFlagName, "", bundleRequestFlagDescription)
+	bundleCommand.Flags().StringVar(&outputFormat, formatFlagName, types.FormatToon, formatFlagDescription)
+	return bundleCommand
 }
 
 func createDocCommand(clipboardProvider clipboard.Copier, copyFlag *bool, copyOnlyFlag *bool, applicationConfig *config.ApplicationConfiguration) *cobra.Command {

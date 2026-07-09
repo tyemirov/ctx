@@ -12,6 +12,7 @@ const (
 	CommandContent   = "content"
 	CommandCallChain = "callchain"
 	CommandDoc       = "doc"
+	CommandBundle    = "bundle"
 
 	FormatRaw  = "raw"
 	FormatToon = "toon"
@@ -85,4 +86,85 @@ type OutputSummary struct {
 	TotalSize   string `json:"totalSize" xml:"totalSize"`
 	TotalTokens int    `json:"totalTokens,omitempty" xml:"totalTokens,omitempty"`
 	Model       string `json:"model,omitempty" xml:"model,omitempty"`
+}
+
+// ContextBundleRequest describes the goal-oriented repository context to assemble.
+type ContextBundleRequest struct {
+	RepositoryRoot    string            `json:"repositoryRoot"`
+	Goal              ContextBundleGoal `json:"goal"`
+	IssueDocumentPath string            `json:"issueDocumentPath,omitempty"`
+	PlanDocumentPath  string            `json:"planDocumentPath,omitempty"`
+	ValidationTarget  string            `json:"validationTarget,omitempty"`
+	MaxTokens         int               `json:"maxTokens,omitempty"`
+	Model             string            `json:"model,omitempty"`
+	IncludePaths      []string          `json:"includePaths,omitempty"`
+	ExcludePaths      []string          `json:"excludePaths,omitempty"`
+}
+
+// ContextBundleGoal is the concrete work item the context bundle should support.
+type ContextBundleGoal struct {
+	ID       string `json:"id,omitempty"`
+	Kind     string `json:"kind,omitempty"`
+	Title    string `json:"title"`
+	Body     string `json:"body,omitempty"`
+	Category string `json:"category,omitempty"`
+}
+
+// ContextBundleOutput is the canonical JSON contract emitted by ctx bundle.
+type ContextBundleOutput struct {
+	Version     int                      `json:"version"`
+	Repository  ContextBundleRepository  `json:"repository"`
+	Goal        ContextBundleGoal        `json:"goal"`
+	Budget      ContextBundleBudget      `json:"budget"`
+	Terms       []string                 `json:"terms"`
+	Contracts   []ContextBundleItem      `json:"contracts"`
+	Files       []ContextBundleItem      `json:"files"`
+	Symbols     []ContextBundleSymbol    `json:"symbols,omitempty"`
+	Exclusions  []ContextBundleExclusion `json:"exclusions,omitempty"`
+	GeneratedBy string                   `json:"generatedBy"`
+}
+
+// ContextBundleRepository identifies the repository scanned for the bundle.
+type ContextBundleRepository struct {
+	Root string `json:"root"`
+	Name string `json:"name"`
+}
+
+// ContextBundleBudget records the token accounting used for selection.
+type ContextBundleBudget struct {
+	MaxTokens  int    `json:"maxTokens"`
+	UsedTokens int    `json:"usedTokens"`
+	Model      string `json:"model"`
+}
+
+// ContextBundleItem is a selected contract or implementation file excerpt.
+type ContextBundleItem struct {
+	Path      string `json:"path"`
+	Role      string `json:"role"`
+	Reason    string `json:"reason"`
+	Score     int    `json:"score,omitempty"`
+	Tokens    int    `json:"tokens"`
+	SHA256    string `json:"sha256"`
+	LineStart int    `json:"lineStart"`
+	LineEnd   int    `json:"lineEnd"`
+	Content   string `json:"content"`
+}
+
+// ContextBundleSymbol describes a structural source symbol found in a selected file.
+type ContextBundleSymbol struct {
+	Path          string `json:"path"`
+	Language      string `json:"language"`
+	Kind          string `json:"kind"`
+	Name          string `json:"name"`
+	QualifiedName string `json:"qualifiedName"`
+	LineStart     int    `json:"lineStart"`
+	LineEnd       int    `json:"lineEnd"`
+}
+
+// ContextBundleExclusion records a file that was considered but left out of the bundle.
+type ContextBundleExclusion struct {
+	Path   string `json:"path"`
+	Role   string `json:"role,omitempty"`
+	Reason string `json:"reason"`
+	Score  int    `json:"score,omitempty"`
 }

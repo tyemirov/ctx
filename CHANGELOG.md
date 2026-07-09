@@ -1,5 +1,36 @@
 # Changelog
 
+## [v0.5.0] - 2026-07-08
+
+### Features ✨
+
+- Introduced the `bundle` CLI command for extracting goal-oriented execution contexts.
+- Added frontend context building for bundles, providing structured context output.
+- Implemented depth-limited web documentation extraction via an HTML crawler for non-GitHub URLs in `ctx doc`.
+
+### Improvements ⚙️
+
+- Updated Google Analytics integration for the web frontend.
+- Enhanced documentation and architecture files to reflect new entry points and internal structure.
+- Improved handling of JavaScript dev dependencies as fallback when runtime dependencies are missing.
+
+### Bug Fixes 🐛
+
+- Resolved duplicate `package main` by consolidating entry points and wiring `main.go` through the CLI bootstrap.
+- Fixed issues with relative links in site documentation pages.
+
+### Testing 🧪
+
+- Added targeted tests for context bundle exclusion rules (e.g., budget, secret files).
+- Verified bundle command integration with frontend context and exclusion logic.
+- Expanded test coverage for webdoc extraction and MCP command execution.
+
+### Docs 📚
+
+- Documented the forward-only contract discipline in `AGENTS.md`.
+- Revised and expanded `ARCHITECTURE.md` with updated package layouts and runtime overviews.
+- Refined `README.md` for user workflows and added a new `CNAME` for site deployment.
+
 ## [v0.4.0]
 
 ### Features ✨

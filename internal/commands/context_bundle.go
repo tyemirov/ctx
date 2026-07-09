@@ -58,6 +58,19 @@ var contextBundleDefaultExclusions = []string{
 	"build/",
 	"coverage/",
 	"tmp/",
+	"secret/",
+	"secrets/",
+	".env",
+	".env.*",
+	"*.env",
+	"*.env.local",
+	"*.env.development",
+	"*.env.production",
+	"*.env.test",
+	"*.key",
+	"*.pem",
+	"*.p8",
+	"*.p12",
 	"*.png",
 	"*.jpg",
 	"*.jpeg",
@@ -222,7 +235,7 @@ func BuildContextBundle(ctx context.Context, options ContextBundleOptions) (*typ
 	var usedTokens int
 	selectedContracts := make([]types.ContextBundleItem, 0, len(contracts))
 	for _, candidate := range contracts {
-		if candidate.tokens > maxTokens && len(selectedContracts) > 0 {
+		if usedTokens+candidate.tokens > maxTokens {
 			exclusions = appendContextBundleExclusion(exclusions, contextBundleBudgetExclusion(candidate))
 			continue
 		}

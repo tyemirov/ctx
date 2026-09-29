@@ -209,3 +209,8 @@ Run `npm ci` to install the test dependencies and Chromium.
 Run `make test-browser` to verify the real documentation footer at mobile and desktop widths.
 Run `make ci` for Go validation and browser checks.
 See the [shared UI migration](docs/mpr-ui-migration.md) for candidate identity and publication gates.
+
+## Release And Deployment
+
+The repository uses the installed Gateway for release, publication, and deployment.
+See the [deployment runbook](docs/deployment.md) for the declared resources and current build blocker.

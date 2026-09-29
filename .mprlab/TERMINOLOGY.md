@@ -97,11 +97,13 @@ Give each term one meaning. Use the same term for the same concept in all docume
 
 ## Repository Technical Nouns
 
-Add repository-specific technical nouns below this line.
-
-```text
-- `term`: Definition with one meaning.
-```
+- `CGO`: The Go interface to C code that the CTX parser requires.
+- `Gateway`: The installed `mprlab-gateway` runtime that operates the repository lifecycle.
+- `lifecycle`: The release, publication, and deployment operations for one selected application.
+- `release receipt`: The immutable record of a sealed application release.
+- `publication receipt`: The immutable record of published release artifacts.
+- `SemVer`: The semantic version scheme used for CTX releases.
+- `Tree-sitter`: The C parser library used by the CTX call chain analyzers.
 
 ## MPR Lab Technical Verbs
 

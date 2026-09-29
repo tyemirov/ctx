@@ -2,6 +2,19 @@
 
 This policy controls all agent work in this repository.
 
+## Temporary Task Files
+
+- Put temporary diagnostic files in `_scratch/<task-id>/`.
+- Use a unique task identifier for each directory.
+- Keep `/_scratch/` in the repository `.gitignore`.
+- Record the directory and its task in the task plan before use.
+- Keep files from an interrupted task until that task resumes or its owner authorizes removal.
+- Before task completion, preserve useful results in maintained tests, tools, or documentation.
+- Remove only the temporary directory owned by the completed task.
+- Verify that this directory is absent before reporting task completion.
+- Preserve directories owned by other tasks.
+- If removal fails, report the remaining path and keep task completion pending.
+
 ## Operator Rules
 
 - Validate only at edges: I/O, HTTP, CLI, DB adapters, browser bootstrap, imported files, and other external boundaries.
@@ -15,6 +28,21 @@ This policy controls all agent work in this repository.
 - Centralize reusable literals: paths, operation names, event names, config keys, status values, and shared messages.
 - Tests target public contracts and invariants, not defensive branches.
 - Prefer black-box integration and end-to-end tests through real entry points.
+
+## Automatic Data Updates And Persistence
+
+This is a binding product principle for every user interface.
+
+- Load current data automatically when a view opens and when its relevant data changes.
+- Update stale data automatically after reconnection and when the user returns to the view.
+- Never require or expose refresh or reload controls for data synchronization.
+- Persist valid user edits automatically. Never require or expose save controls for data persistence.
+- Show pending, saved, validation, conflict, and failure states without requiring a manual refresh or save.
+- Preserve unsaved edits during background updates, request failures, and concurrent changes.
+- Serialize writes and retain newer edits when an earlier write completes.
+- Keep explicit controls for user intent, such as creation, deletion, activation, and confirmation of consequential actions.
+- Do not use an explicit action as a substitute for automatic data persistence.
+- Verify automatic updates, persistence, error recovery, and account isolation through public interface tests.
 
 ## Test-Driven Development
 
@@ -81,13 +109,28 @@ Apply this section when the task changes or validates a selected application man
 
 - Keep the selected application manifest versionless.
 - Keep `owner`, `release`, and `resources` as the current baseline fields.
-- Each later gateway must accept every manifest that an earlier versionless gateway accepted.
-- Keep each accepted field name, type, requirement, and function.
+- Apply the current iOS baseline below before the manifest preservation rules.
+- For other manifest contracts, accept each manifest that an earlier versionless gateway accepted.
+- For those contracts, keep each accepted field name, type, requirement, and function.
 - A field added to an existing shape must be optional.
 - A field added to an existing shape must have one canonical default.
 - Normalize that default before manifest identity calculation.
 - Add a resource kind only with one closed shape.
 - Reject unknown fields and `schema_version`.
+
+### Current iOS Baseline
+
+The operator selected a fresh iOS contract on September 10, 2026.
+Previous iOS adapter acceptance does not constrain this contract.
+
+- Require `build_system: local` and a repository-relative `.mjs` path in `build.ios`.
+- Build and sign iOS artifacts locally through the shared native builder.
+- Publish the sealed IPA through the shared App Store Connect adapter.
+- Reject iOS `.sh` adapters, Xcode Cloud requests, and cloud publication receipts.
+- Do not add compatibility dispatch, obsolete aliases, or migration requirements for the removed iOS contract.
+- Preserve the declared TestFlight or App Store destination and its export restriction.
+
+This baseline does not authorize removal of stored releases, credentials, or deployment state.
 
 ## Static Website Hosting
 
@@ -102,6 +145,22 @@ Apply this section to deployment or publication work for a browser frontend.
 - Treat a container as an artifact source only when its static output goes to GitHub Pages.
 - Verify publication through the public website and `/.mprlab-release.json`.
 - Run the Governor check after each selected manifest change and before each release, publish, or deploy operation.
+
+## Gateway Lifecycle Execution
+
+Apply this section when the repository uses the selected-manifest lifecycle or owns Gateway infrastructure operations.
+
+- Use the installed `mprlab-gateway` runtime for application and infrastructure operations.
+- Preserve `make release && make publish && make deploy` as the application operator command.
+- Pass the selected application Git root through `--app-root`.
+- Use `MPRLAB_GATEWAY_EXECUTABLE` for an explicit installed command.
+- Preserve application source validation, release policy, resource ownership, private inputs, and sealed receipts.
+- Keep each operation and its child calls on one captured runtime package and dependency environment.
+- Keep Gateway inventory and private config under `MPRLAB_GATEWAY_OPERATOR_ROOT`.
+- Use `$HOME/.config/mprlab-gateway` as the default operator root.
+- Select an explicit version with `mprlab-gateway install --version <version>` to change the active runtime.
+- Use Gateway source for repository CI, release preparation, and Gateway publication.
+- Keep installation, application operations, and operator-controlled production activation as separate gates.
 
 ## Credential Discovery
 
@@ -120,6 +179,17 @@ Apply this gate when the selected task requires credentials.
 - When available, use a non-mutating authentication command to verify the discovered value.
 - Request new credentials only after each authorized existing input fails verification.
 - Report a credential blocker only after you complete this gate.
+
+## Issue Closure
+
+- Close an issue when its required implementation, documentation, and code validation are completed.
+- Keep release, publication, deployment, production DNS/TLS, and live acceptance outside implementation issue acceptance criteria.
+- Do not keep an implementation issue open or blocked because production operations are not completed.
+- Record pending production operations in a runbook or separate operational record.
+- Validate deployment tooling and infrastructure configuration through the required isolated integration tests.
+
+Failed or missing required code validation prevents closure.
+Production operations outside the task do not remove code validation requirements.
 
 ## Validation
 

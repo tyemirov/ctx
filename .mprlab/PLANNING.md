@@ -57,6 +57,9 @@ Suggested shape:
 
 ## Completion
 
+Use [Issue Closure](POLICY.md#issue-closure) to determine implementation issue completion.
+Keep production operations in a separate operational record.
+
 Complete a change only after you complete all requested edits and necessary documentation updates.
 
 The applicable validation after the last change must pass. If validation cannot pass, record the concrete blocker.

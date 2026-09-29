@@ -23,6 +23,11 @@ This file gives backend rules for Go code. Obey root `AGENTS.md` and `.mprlab/PO
 - Use structured logging when the repo has a logger.
 - Propagate `context.Context` through effectful boundaries.
 
+## Temporary Diagnostic Programs
+
+- Put diagnostic Go programs in `_scratch/<task-id>/` with one `main` package per directory.
+- Obey [Temporary Task Files](POLICY.md#temporary-task-files) for ownership and removal.
+
 ## Testing
 
 - For a behavior change, start with an integration test through the real HTTP, CLI, or public package entry point.

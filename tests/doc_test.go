@@ -148,7 +148,7 @@ func TestDocCommandGitHubExtraction(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testCase := testCase
+
 		t.Run(testCase.name, func(t *testing.T) {
 			server := startGitHubMockServer(t, testCase.owner, testCase.repository, testCase.reference, testCase.rootPath, testCase.files)
 			defer server.Close()

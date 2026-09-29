@@ -17,16 +17,17 @@ import (
 )
 
 const (
-	defaultListenAddress    = "127.0.0.1:0"
-	defaultShutdownDuration = 5 * time.Second
-	headerContentType       = "Content-Type"
-	mimeTypeJSON            = "application/json"
-	capabilitiesPath        = "/capabilities"
-	rootPath                = "/"
-	commandsPrefix          = "/commands/"
-	environmentPath         = "/environment"
-	errorFieldName          = "error"
-	errorCommandNotFound    = "command not found"
+	defaultListenAddress     = "127.0.0.1:0"
+	defaultShutdownDuration  = 5 * time.Second
+	defaultReadHeaderTimeout = 5 * time.Second
+	headerContentType        = "Content-Type"
+	mimeTypeJSON             = "application/json"
+	capabilitiesPath         = "/capabilities"
+	rootPath                 = "/"
+	commandsPrefix           = "/commands/"
+	environmentPath          = "/environment"
+	errorFieldName           = "error"
+	errorCommandNotFound     = "command not found"
 )
 
 // Capability describes a feature exposed by the MCP server.
@@ -141,7 +142,7 @@ func (server Server) Run(ctx context.Context, notify func(string)) error {
 	router.HandleFunc(commandsPrefix, server.handleCommand)
 	router.HandleFunc(environmentPath, server.handleEnvironment)
 
-	httpServer := &http.Server{Handler: router}
+	httpServer := &http.Server{Handler: router, ReadHeaderTimeout: defaultReadHeaderTimeout}
 	group, groupCtx := errgroup.WithContext(ctx)
 
 	group.Go(func() error {

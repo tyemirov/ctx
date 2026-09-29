@@ -229,11 +229,12 @@ func RenderRaw(commandName string, collected []interface{}, includeSummary bool)
 			}
 		case *types.TreeOutputNode:
 			if commandName == types.CommandTree {
-				if outputItem.Type == types.NodeTypeFile {
+				switch outputItem.Type {
+				case types.NodeTypeFile:
 					fmt.Printf("[File] %s\n", outputItem.Path)
-				} else if outputItem.Type == types.NodeTypeBinary {
+				case types.NodeTypeBinary:
 					fmt.Printf(binaryNodeFormat, outputItem.Path, mimeTypeLabel, outputItem.MimeType)
-				} else {
+				default:
 					fmt.Printf("\n--- Directory Tree: %s ---\n", outputItem.Path)
 					renderTreeNode(os.Stdout, outputItem, "", includeSummary, true, true)
 				}

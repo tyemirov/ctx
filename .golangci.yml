@@ -1,44 +1,120 @@
-linters:
-  enable:
-    - unused
-    - staticcheck
-    - stylecheck
-    - gocritic
-    - errcheck            # Checks for unchecked errors
-    - ineffassign         # Detects unused assignments
-    - gosimple            # Simplifies redundant code
-    - govet               # Standard Go vet checks
-    - revive              # Faster, configurable replacement for golint
-    - goconst             # Finds repeated string and number constants
-    - gosec               # Security scanner for Go code
-    - gofmt               # Ensures code is formatted properly
-    - lll                 # Detects long lines (default 120 chars)
-    - prealloc            # Suggests preallocating slices for performance
-    - funlen              # Warns when functions exceed a certain length
-    - unconvert           # Detects unnecessary conversions
-    - nakedret            # Warns about naked returns (bad practice)
-    - noctx               # Ensures proper use of context in functions
-    - cyclop              # Detects high cyclomatic complexity
-    - depguard            # Prevents using disallowed dependencies
-    - dupl                # Detects duplicate code
-    - copyloopvar       # Detects loop variables being captured incorrectly
-    - godot               # Ensures comments end with a period
-    - godox               # Detects TODO, FIXME, etc.
-    - goprintffuncname    # Ensures printf-like functions are named correctly
-    - whitespace          # Detects trailing whitespace
-
-gocritic:
-  enable:
-    - mixed-receiver      # Detects structs with both pointer and value receivers
-    - commentedOutCode    # Finds commented-out code
-    - dupImport           # Warns about duplicate imports
-    - rangeExprCopy       # Detects expensive copies in range loops
-    - hugeParam           # Warns about passing large structs by value
-
-issues:
-  max-same-issues: 0  # No limit on repeated issues
-  max-issues-per-linter: 0  # No limit on issues per linter
-  exclude-use-default: false  # Use all linters' default exclusions
-
+version: "2"
 run:
-  timeout: 5m  # Extend timeout for large
+  timeout: 5m
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - unused
+    - copyloopvar
+    - cyclop
+    - depguard
+    - dupl
+    - funlen
+    - goconst
+    - gocritic
+    - godot
+    - godox
+    - goprintffuncname
+    - gosec
+    - lll
+    - nakedret
+    - noctx
+    - prealloc
+    - revive
+    - staticcheck
+    - unconvert
+    - whitespace
+  settings:
+    depguard:
+      rules:
+        repository:
+          list-mode: strict
+          files:
+            - "$all"
+          allow:
+            - "$gostd"
+            - "go/"
+            - "github.com/tyemirov/ctx/"
+            - "github.com/tyemirov/ctx$"
+            - "github.com/atotto/clipboard/"
+            - "github.com/atotto/clipboard$"
+            - "github.com/dlclark/regexp2/"
+            - "github.com/dlclark/regexp2$"
+            - "github.com/fsnotify/fsnotify/"
+            - "github.com/fsnotify/fsnotify$"
+            - "github.com/go-viper/mapstructure/v2/"
+            - "github.com/go-viper/mapstructure/v2$"
+            - "github.com/google/uuid/"
+            - "github.com/google/uuid$"
+            - "github.com/inconshreveable/mousetrap/"
+            - "github.com/inconshreveable/mousetrap$"
+            - "github.com/pelletier/go-toml/v2/"
+            - "github.com/pelletier/go-toml/v2$"
+            - "github.com/pkoukk/tiktoken-go/"
+            - "github.com/pkoukk/tiktoken-go$"
+            - "github.com/sagikazarmark/locafero/"
+            - "github.com/sagikazarmark/locafero$"
+            - "github.com/smacker/go-tree-sitter/"
+            - "github.com/smacker/go-tree-sitter$"
+            - "github.com/spf13/afero/"
+            - "github.com/spf13/afero$"
+            - "github.com/spf13/cast/"
+            - "github.com/spf13/cast$"
+            - "github.com/spf13/cobra/"
+            - "github.com/spf13/cobra$"
+            - "github.com/spf13/pflag/"
+            - "github.com/spf13/pflag$"
+            - "github.com/spf13/viper/"
+            - "github.com/spf13/viper$"
+            - "github.com/subosito/gotenv/"
+            - "github.com/subosito/gotenv$"
+            - "go.uber.org/multierr/"
+            - "go.uber.org/multierr$"
+            - "go.uber.org/zap/"
+            - "go.uber.org/zap$"
+            - "go.yaml.in/yaml/v3/"
+            - "go.yaml.in/yaml/v3$"
+            - "golang.org/x/mod/"
+            - "golang.org/x/mod$"
+            - "golang.org/x/sync/"
+            - "golang.org/x/sync$"
+            - "golang.org/x/sys/"
+            - "golang.org/x/sys$"
+            - "golang.org/x/text/"
+            - "golang.org/x/text$"
+            - "golang.org/x/tools/"
+            - "golang.org/x/tools$"
+            - "gopkg.in/check.v1/"
+            - "gopkg.in/check.v1$"
+            - "gopkg.in/yaml.v3/"
+            - "gopkg.in/yaml.v3$"
+    staticcheck:
+      checks:
+        - all
+    gocritic:
+      enabled-checks:
+        - commentedOutCode
+        - dupImport
+        - rangeExprCopy
+        - hugeParam
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

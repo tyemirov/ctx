@@ -44,7 +44,7 @@ type Event struct {
 	Summary   *SummaryEvent         `json:"summary,omitempty" xml:"summary,omitempty"`
 	Message   *LogEvent             `json:"message,omitempty" xml:"message,omitempty"`
 	Err       *ErrorEvent           `json:"error,omitempty" xml:"error,omitempty"`
-	Tree      *types.TreeOutputNode `json:"tree,omitempty" xml:"tree,omitempty"`
+	Tree      *types.TreeOutputNode `json:"tree,omitempty" xml:"tree>node,omitempty"`
 }
 
 type DirectoryEvent struct {

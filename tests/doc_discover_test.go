@@ -170,7 +170,6 @@ func startDocDiscoverGitHubServer(t *testing.T, repositories map[string]docRepoF
 					if strings.Contains(filePath, "/") {
 						continue
 					}
-					relative = filePath
 				}
 				entries = append(entries, map[string]interface{}{
 					"name": filepath.Base(relative),

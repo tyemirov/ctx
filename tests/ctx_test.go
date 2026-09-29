@@ -272,7 +272,7 @@ func TestTreeMatchesContentWithoutContentAcrossFormats(t *testing.T) {
 
 	formats := []string{appTypes.FormatToon, appTypes.FormatRaw, appTypes.FormatJSON, appTypes.FormatXML}
 	for _, format := range formats {
-		format := format
+
 		t.Run(format, func(t *testing.T) {
 			treeArgs := []string{appTypes.CommandTree, "--format", format, workingDir}
 			contentArgs := []string{appTypes.CommandContent, "--format", format, "--content=false", workingDir}
@@ -388,10 +388,6 @@ func bundleHasSymbol(symbols []appTypes.ContextBundleSymbol, path string, name s
 		}
 	}
 	return false
-}
-
-func decodeXMLFiles(t *testing.T, data string) []appTypes.TreeOutputNode {
-	return flattenFileNodes(decodeXMLRoots(t, data))
 }
 
 func findNodeByName(nodes []appTypes.TreeOutputNode, name string) *appTypes.TreeOutputNode {
@@ -1092,9 +1088,7 @@ func TestCTX(testingHandle *testing.T) {
 				return dir
 			},
 			validate: func(t *testing.T, output string) {
-				if !(strings.Contains(output, "File: "+explicitFilePath) &&
-					strings.Contains(output, "Explicit raw content") &&
-					strings.Contains(output, "End of file: "+explicitFilePath)) {
+				if !strings.Contains(output, "File: "+explicitFilePath) || !strings.Contains(output, "Explicit raw content") || !strings.Contains(output, "End of file: "+explicitFilePath) {
 					t.Fatalf("unexpected raw content output\n%s", output)
 				}
 				if strings.Contains(output, mimeTypeIndicator) {

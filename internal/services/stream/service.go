@@ -3,7 +3,6 @@ package stream
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -311,13 +310,4 @@ func StreamContent(ctx context.Context, opts ContentOptions, out chan<- Event) e
 		IncludeContent:        true,
 		BinaryContentPatterns: opts.BinaryContent,
 	}, out)
-}
-
-func directoryDepth(root, path string) int {
-	relative := utils.RelativePathOrSelf(path, root)
-	if relative == "." {
-		return 0
-	}
-	separators := string(filepath.Separator)
-	return strings.Count(relative, separators)
 }

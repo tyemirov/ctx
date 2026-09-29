@@ -1,21 +1,8 @@
 package output
 
 import (
-	"path/filepath"
-
 	"github.com/tyemirov/ctx/internal/types"
 )
-
-func normalizePath(path string) string {
-	if path == "" {
-		return ""
-	}
-	return filepath.Clean(path)
-}
-
-func pathsEqual(a, b string) bool {
-	return normalizePath(a) == normalizePath(b)
-}
 
 func cloneTreeNode(node *types.TreeOutputNode) *types.TreeOutputNode {
 	if node == nil {

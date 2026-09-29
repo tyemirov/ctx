@@ -2,7 +2,6 @@ package docs
 
 import (
 	"go/ast"
-	"go/build"
 	"go/doc"
 	"go/parser"
 	"go/token"
@@ -168,27 +167,22 @@ func (extractor *goExtractor) CollectDocumentation(filePath string, _ []byte) ([
 }
 
 func loadGoPackageDocumentation(importPath string) *doc.Package {
-	packagesConfig := &packages.Config{Mode: packages.NeedSyntax | packages.NeedFiles}
-	if loadedPackages, loadError := packages.Load(packagesConfig, importPath); loadError == nil && len(loadedPackages) > 0 && len(loadedPackages[0].Syntax) > 0 {
-		packageDocumentation, _ := doc.NewFromFiles(loadedPackages[0].Fset, loadedPackages[0].Syntax, importPath)
-		return packageDocumentation
+	packagesConfig := &packages.Config{
+		Mode: packages.NeedName | packages.NeedSyntax | packages.NeedFiles,
+		Fset: token.NewFileSet(),
 	}
-	buildPackage, importError := build.Default.Import(importPath, "", build.FindOnly)
-	if importError != nil {
+	loadedPackages, loadError := packages.Load(packagesConfig, importPath)
+	if loadError != nil || len(loadedPackages) == 0 || len(loadedPackages[0].Errors) != 0 {
 		return nil
 	}
-	fileSet := token.NewFileSet()
-	directoryASTMap, parseError := parser.ParseDir(fileSet, buildPackage.Dir, nil, parser.ParseComments)
-	if parseError != nil {
+	loadedPackage := loadedPackages[0]
+	if len(loadedPackage.Syntax) == 0 {
 		return nil
 	}
-	var files []*ast.File
-	for _, astPackage := range directoryASTMap {
-		for _, fileAST := range astPackage.Files {
-			files = append(files, fileAST)
-		}
+	packageDocumentation, documentationError := doc.NewFromFiles(loadedPackage.Fset, loadedPackage.Syntax, importPath)
+	if documentationError != nil {
+		return nil
 	}
-	packageDocumentation, _ := doc.NewFromFiles(fileSet, files, importPath)
 	return packageDocumentation
 }
 

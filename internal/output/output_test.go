@@ -117,7 +117,7 @@ func TestWriteTreeRawRendersConnectors(testingInstance *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testCase := testCase
+
 		testingInstance.Run(testCase.name, func(testingInstance *testing.T) {
 			testingInstance.Parallel()
 

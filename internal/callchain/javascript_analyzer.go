@@ -1,6 +1,7 @@
 package callchain
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
@@ -179,10 +180,11 @@ func (analyzer *javaScriptAnalyzer) collectFunctions(root string) ([]javaScriptF
 		if readError != nil {
 			return readError
 		}
-		tree := analyzer.parser.Parse(nil, content)
-		if tree == nil {
-			return nil
+		tree, parseError := analyzer.parser.ParseCtx(context.Background(), nil, content)
+		if parseError != nil {
+			return fmt.Errorf("parse %s: %w", path, parseError)
 		}
+		defer tree.Close()
 		moduleName := javaScriptModuleName(root, path)
 		analyzer.walkJavaScriptTree(tree.RootNode(), content, moduleName, path, &functions)
 		return nil

@@ -33,8 +33,10 @@ go.work.sum
 .idea/
 bin/
 
-# BEGIN MPRLAB-GOVERNANCE
-/.mprlab/*-PLAN.md
-# END MPRLAB-GOVERNANCE
 
 /node_modules/
+
+# BEGIN MPRLAB-GOVERNANCE
+/.mprlab/*-PLAN.md
+/_scratch/
+# END MPRLAB-GOVERNANCE

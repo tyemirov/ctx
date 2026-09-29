@@ -8,6 +8,9 @@ on:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
+      - "Makefile"
+      - ".golangci.yml"
+      - ".github/workflows/test.yml"
   pull_request:
     branches:
       - master
@@ -15,6 +18,9 @@ on:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
+      - "Makefile"
+      - ".golangci.yml"
+      - ".github/workflows/test.yml"
 
 jobs:
   test:
@@ -38,8 +44,13 @@ jobs:
           go fmt ./...
           git diff --exit-code
 
-      - name: Run go vet
-        run: go vet ./...
+      - name: Install lint tools
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@v0.8.1
+          go install github.com/gordonklaus/ineffassign@v0.2.0
+
+      - name: Run lint checks
+        run: make lint
 
       - name: RunTests
         run: go test ./...

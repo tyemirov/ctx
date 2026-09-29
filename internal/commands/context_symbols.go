@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"context"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -101,11 +102,13 @@ func goReceiverName(fileSet *token.FileSet, expression ast.Expr) string {
 
 func extractJavaScriptContextSymbols(relativePath string, content []byte) []types.ContextBundleSymbol {
 	parserHandle := sitter.NewParser()
+	defer parserHandle.Close()
 	parserHandle.SetLanguage(javascript.GetLanguage())
-	tree := parserHandle.Parse(nil, content)
-	if tree == nil {
+	tree, parseError := parserHandle.ParseCtx(context.Background(), nil, content)
+	if parseError != nil {
 		return nil
 	}
+	defer tree.Close()
 	var symbols []types.ContextBundleSymbol
 	walkJavaScriptContextSymbols(tree.RootNode(), relativePath, content, nil, &symbols)
 	return symbols
@@ -164,11 +167,13 @@ func isJavaScriptCallableValue(nodeType string) bool {
 
 func extractPythonContextSymbols(relativePath string, content []byte) []types.ContextBundleSymbol {
 	parserHandle := sitter.NewParser()
+	defer parserHandle.Close()
 	parserHandle.SetLanguage(python.GetLanguage())
-	tree := parserHandle.Parse(nil, content)
-	if tree == nil {
+	tree, parseError := parserHandle.ParseCtx(context.Background(), nil, content)
+	if parseError != nil {
 		return nil
 	}
+	defer tree.Close()
 	var symbols []types.ContextBundleSymbol
 	walkPythonContextSymbols(tree.RootNode(), relativePath, content, nil, &symbols)
 	return symbols

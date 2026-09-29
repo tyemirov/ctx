@@ -319,13 +319,3 @@ func detectUVExecutable() (string, error) {
 	}
 	return "", errors.New("uv executable not found; install uv from https://github.com/astral-sh/uv or expose it via CTX_UV")
 }
-
-func resolvePath(base string, path string) string {
-	if path == "" {
-		return ""
-	}
-	if filepath.IsAbs(path) || base == "" {
-		return path
-	}
-	return filepath.Join(base, path)
-}

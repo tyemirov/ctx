@@ -155,7 +155,7 @@ func TestRunTreeRawStreamingOutputsSummaryAfterFiles(t *testing.T) {
 	if nestedSummaryIndex == -1 {
 		t.Fatalf("expected nested summary line in output")
 	}
-	if !(nestedDirIndex < nestedSummaryIndex && nestedSummaryIndex < nestedFileIndex) {
+	if nestedDirIndex >= nestedSummaryIndex || nestedSummaryIndex >= nestedFileIndex {
 		t.Fatalf("nested summary ordering incorrect: %s", outputText)
 	}
 

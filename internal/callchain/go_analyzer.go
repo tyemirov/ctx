@@ -2,6 +2,7 @@ package callchain
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/printer"
@@ -49,7 +50,7 @@ func (analyzer *GoAnalyzer) Analyze(request AnalyzerRequest) (*types.CallChainOu
 		return nil, fmt.Errorf(errorFailedToLoadPackages, loadError)
 	}
 	if packages.PrintErrors(loadedPackages) > 0 {
-		return nil, fmt.Errorf(errorLoadingPackagesProduced)
+		return nil, errors.New(errorLoadingPackagesProduced)
 	}
 
 	ssaProgram, _ := ssautil.Packages(loadedPackages, ssa.BuilderMode(0))

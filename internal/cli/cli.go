@@ -287,7 +287,7 @@ func createRootCommand(clipboardProvider clipboard.Copier) *cobra.Command {
 				os.Exit(0)
 			}
 			if runMCP && command.Name() != rootUse {
-				return fmt.Errorf(mcpFlagConflictMessage)
+				return errors.New(mcpFlagConflictMessage)
 			}
 			if configurationLoaded {
 				return nil
@@ -385,8 +385,8 @@ func addPathFlags(command *cobra.Command, options *pathOptions) {
 // createTreeCommand returns the tree subcommand.
 func createTreeCommand(clipboardProvider clipboard.Copier, copyFlag *bool, copyOnlyFlag *bool, applicationConfig *config.ApplicationConfiguration) *cobra.Command {
 	var pathConfiguration pathOptions
-	var outputFormat string = types.FormatToon
-	var summaryEnabled bool = true
+	var outputFormat = types.FormatToon
+	var summaryEnabled = true
 	var tokenConfiguration tokenOptions
 	tokenConfiguration.model = defaultTokenizerModelName
 	var includeContent bool
@@ -454,9 +454,9 @@ func createTreeCommand(clipboardProvider clipboard.Copier, copyFlag *bool, copyO
 // createContentCommand returns the content subcommand.
 func createContentCommand(clipboardProvider clipboard.Copier, copyFlag *bool, copyOnlyFlag *bool, applicationConfig *config.ApplicationConfiguration) *cobra.Command {
 	var pathConfiguration pathOptions
-	var outputFormat string = types.FormatToon
+	var outputFormat = types.FormatToon
 	documentationMode := types.DocumentationModeDisabled
-	var summaryEnabled bool = true
+	var summaryEnabled = true
 	var tokenConfiguration tokenOptions
 	tokenConfiguration.model = defaultTokenizerModelName
 	includeContent := true
@@ -561,9 +561,9 @@ func createCallChainCommand(clipboardProvider clipboard.Copier, copyFlag *bool, 
 	if callChainService == nil {
 		callChainService = commands.NewCallChainService()
 	}
-	var outputFormat string = types.FormatToon
+	var outputFormat = types.FormatToon
 	documentationMode := types.DocumentationModeDisabled
-	var callChainDepth int = defaultCallChainDepth
+	var callChainDepth = defaultCallChainDepth
 	var docsAttempt bool
 	var docsAPIBase string
 
@@ -655,7 +655,7 @@ func createCallChainCommand(clipboardProvider clipboard.Copier, copyFlag *bool, 
 }
 
 func createBundleCommand(clipboardProvider clipboard.Copier, copyFlag *bool, copyOnlyFlag *bool) *cobra.Command {
-	var outputFormat string = types.FormatToon
+	var outputFormat = types.FormatToon
 	var requestPath string
 
 	bundleCommand := &cobra.Command{
@@ -667,7 +667,7 @@ func createBundleCommand(clipboardProvider clipboard.Copier, copyFlag *bool, cop
 		RunE: func(command *cobra.Command, arguments []string) error {
 			outputFormatLower := strings.ToLower(outputFormat)
 			if outputFormatLower != types.FormatToon && outputFormatLower != types.FormatJSON {
-				return fmt.Errorf(invalidBundleFormatMessage)
+				return errors.New(invalidBundleFormatMessage)
 			}
 			if strings.TrimSpace(requestPath) == "" {
 				return fmt.Errorf("%s is required", bundleRequestFlagName)
@@ -748,7 +748,7 @@ func createDocCommand(clipboardProvider clipboard.Copier, copyFlag *bool, copyOn
 	var repositoryReference string
 	var rulesPath string
 	var apiBase string
-	var webDepth int = 1
+	var webDepth = 1
 	documentationMode := types.DocumentationModeFull
 
 	docCommand := &cobra.Command{
@@ -1126,7 +1126,7 @@ func runTool(descriptor commandDescriptor) error {
 			return err
 		}
 	default:
-		return fmt.Errorf(unsupportedCommandMessage)
+		return errors.New(unsupportedCommandMessage)
 	}
 
 	if clipboardBuffer != nil {
@@ -1194,21 +1194,22 @@ func runCallChain(
 	if outputWriter == nil {
 		outputWriter = os.Stdout
 	}
-	if format == types.FormatJSON {
+	switch format {
+	case types.FormatJSON:
 		renderedCallChainJSONOutput, renderCallChainJSONError := output.RenderCallChainJSON(callChainData)
 		if renderCallChainJSONError != nil {
 			return renderCallChainJSONError
 		}
 		fmt.Fprintln(outputWriter, renderedCallChainJSONOutput)
-	} else if format == types.FormatToon {
+	case types.FormatToon:
 		fmt.Fprintln(outputWriter, output.RenderCallChainToon(callChainData))
-	} else if format == types.FormatXML {
+	case types.FormatXML:
 		renderedCallChainXMLOutput, renderCallChainXMLError := output.RenderCallChainXML(callChainData)
 		if renderCallChainXMLError != nil {
 			return renderCallChainXMLError
 		}
 		fmt.Fprintln(outputWriter, renderedCallChainXMLOutput)
-	} else {
+	default:
 		fmt.Fprintln(outputWriter, output.RenderCallChainRaw(callChainData))
 	}
 	return nil
@@ -1243,11 +1244,9 @@ func runStreamCommand(
 
 	totalRootPaths := len(validatedPaths)
 
-	renderCommandName := commandName
+	renderCommandName := types.CommandTree
 	if includeContent {
 		renderCommandName = types.CommandContent
-	} else {
-		renderCommandName = types.CommandTree
 	}
 
 	var renderer output.StreamRenderer
@@ -1564,7 +1563,7 @@ func resolveAndValidatePaths(inputs []string) ([]types.ValidatedPath, error) {
 		result = append(result, types.ValidatedPath{AbsolutePath: cleanPath, IsDir: info.IsDir()})
 	}
 	if len(result) == 0 {
-		return nil, fmt.Errorf(errorNoValidPaths)
+		return nil, errors.New(errorNoValidPaths)
 	}
 	return result, nil
 }
@@ -1802,11 +1801,11 @@ func resolveRepositoryCoordinates(pathSpec string, owner string, repository stri
 		coordinates.Reference = reference
 	}
 	if coordinates.Owner == "" || coordinates.Repository == "" {
-		return repositoryCoordinates{}, fmt.Errorf(docMissingCoordinatesErrorMessage)
+		return repositoryCoordinates{}, errors.New(docMissingCoordinatesErrorMessage)
 	}
 	normalizedRoot := normalizeRepositoryRootPath(coordinates.RootPath)
 	if normalizedRoot == "" {
-		return repositoryCoordinates{}, fmt.Errorf(docMissingPathErrorMessage)
+		return repositoryCoordinates{}, errors.New(docMissingPathErrorMessage)
 	}
 	coordinates.RootPath = normalizedRoot
 	return coordinates, nil

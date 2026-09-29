@@ -32,7 +32,7 @@ func TestBuildContextBundleEnforcesCumulativeContractBudget(testingHandle *testi
 	}
 
 	for _, testCase := range testCases {
-		testCase := testCase
+
 		testingHandle.Run(testCase.testName, func(subtestHandle *testing.T) {
 			repositoryRoot := subtestHandle.TempDir()
 			contractContent := strings.Repeat("x", 40)
@@ -82,7 +82,7 @@ func TestBuildContextBundleOmitsSecretEnvironmentFiles(testingHandle *testing.T)
 	}
 
 	for _, testCase := range testCases {
-		testCase := testCase
+
 		testingHandle.Run(testCase.testName, func(subtestHandle *testing.T) {
 			repositoryRoot := subtestHandle.TempDir()
 			secretMarker := "super-secret-api-key-context"

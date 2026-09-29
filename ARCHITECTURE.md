@@ -215,17 +215,6 @@ requests fail fast with contextual errors when the platform is unsupported. Pers
 
 ## Release Workflow
 
-Follow these steps to publish a tagged release:
-
-1. Update `CHANGELOG.md` with a new version section.
-2. Commit the changelog update.
-3. Tag the commit and push both the branch and the tag:
-
-   ```bash
-   git tag vX.Y.Z
-   git push origin master
-   git push origin vX.Y.Z
-   ```
-
-Tags starting with `v` trigger the automated release workflow, build platform binaries, and extract release notes from
-the matching changelog section.
+The installed Gateway owns the release, publication, and deployment operations.
+The [deployment runbook](docs/deployment.md) defines the CTX resources, validation, and current build blocker.
+The repository declares its resources in `.mprlab/deploy/resources.yml`.

@@ -23,6 +23,8 @@ This file gives rules for browser frontends. Obey root `AGENTS.md` and `.mprlab/
 
 ## UI State
 
+Obey the binding [automatic data updates and persistence](POLICY.md#automatic-data-updates-and-persistence) principle.
+
 - Keep one source of truth for workflow state.
 - Derive display values instead of duplicating derived state.
 - Dispatch intent-specific events.

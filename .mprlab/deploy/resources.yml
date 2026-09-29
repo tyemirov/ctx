@@ -1,0 +1,28 @@
+mprlab_resources:
+  owner: ctx
+  release:
+    scheme: semver
+  resources:
+    - kind: github_release_binary
+      id: ctx-cli
+      repository: tyemirov/ctx
+      build:
+        system: go
+        package: .
+        binary: ctx
+        platforms:
+          - linux/amd64
+          - darwin/amd64
+          - darwin/arm64
+          - windows/amd64
+    - kind: github_pages
+      id: ctx-docs
+      repository: tyemirov/ctx
+      branch: gh-pages
+      domain: ctx.mprlab.com
+      url: https://ctx.mprlab.com/
+      source:
+        kind: directory
+        path: docs
+      verification:
+        path: /.mprlab-release.json

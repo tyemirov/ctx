@@ -2,17 +2,26 @@
 
 ## Resources
 
-The repository declares one CLI resource and one GitHub Pages resource in `.mprlab/deploy/resources.yml`.
+The repository declares four CLI resources and one GitHub Pages resource in `.mprlab/deploy/resources.yml`.
 The release policy uses SemVer and the existing CTX version history.
 The CLI entry point is the module root (`.`).
 The `cmd/ctx` directory contains a library package.
 
-The CLI resource declares these platforms:
+Each CLI resource selects one platform and its compiler inputs.
+All four resources build the same CTX source with CGO enabled.
+Tree-sitter supplies the Python and JavaScript parsers.
 
-- `linux/amd64`
-- `darwin/amd64`
-- `darwin/arm64`
-- `windows/amd64`
+| Platform | Resource | C compiler |
+| --- | --- | --- |
+| `linux/amd64` | `ctx-cli-linux-amd64` | `zig cc -target x86_64-linux-musl` |
+| `darwin/amd64` | `ctx-cli-darwin-amd64` | `clang -arch x86_64` |
+| `darwin/arm64` | `ctx-cli-darwin-arm64` | `clang -arch arm64` |
+| `windows/amd64` | `ctx-cli-windows-amd64` | `zig cc -target x86_64-windows-gnu` |
+
+The Linux resource selects `CGO_LDFLAGS=-static`.
+Its binary contains the necessary C library code.
+The macOS resources use the Apple SDK on the build host.
+The Windows resource uses the Windows headers and libraries from Zig.
 
 Gateway creates one `ctx-<os>-<arch>.tar.gz` archive for each platform.
 Each archive contains `ctx` or `ctx.exe`.
@@ -25,29 +34,39 @@ Deployment selects that branch as the GitHub Pages source.
 The public URL is `https://ctx.mprlab.com/`.
 Gateway creates and verifies `/.mprlab-release.json`.
 
+## Build Requirements
+
+Use a macOS build host with Go, Apple Command Line Tools, and Zig on `PATH`.
+Install Zig with `brew install zig`.
+Use Gateway `v4.7.3` or later for the optional `build.environment` contract.
+
+The application owns each CGO setting and compiler input.
+Gateway supplies `GOOS`, `GOARCH`, and `MPRLAB_RELEASE_VERSION` for each build.
+The manifest selects `CGO_ENABLED=1` and `CC` through each resource's `build.environment` mapping.
+An inherited `CGO_ENABLED=0` does not replace these declared values.
+
+Keep all four platforms and both language parsers.
+Do not disable CGO to make a release build pass.
+For an absent compiler or invalid compiler input, retain the native build error.
+
 ## Local Validation
 
 Run `npm ci` to install the browser test dependencies.
 Run `make ci` for Go lint, Go tests, and Puppeteer browser tests.
 Run `make governance-check` to verify the managed guidance and Pages declaration.
-Run `make check-release-build` to verify the installed Gateway binary build contract.
+Run `make check-release-build` to compile all four binaries from the manifest.
 
-## Current Build Blocker
-
-The lifecycle is **NOT READY** with Gateway `v4.7.2`.
-CTX requires CGO for its Tree-sitter dependency.
-The installed Gateway binary builder sets `CGO_ENABLED=0`.
-Its `github_release_binary` contract has no CGO option or custom build adapter.
-`make check-release-build` fails because the parser packages require CGO.
-
-The affected runtime task is `deploy/ansible/playbooks/tasks/build-selected-release-github-binary.yml`.
-The CTX manifest declares the supported resource shape.
-The build boundary must support the CTX CGO requirement before release.
-Keep all four platforms and the existing parser behavior when that change is selected.
+The release build test uses the `releasebuild` Go build tag.
+This separate lane needs the macOS SDK and Zig.
+The normal CI lane does not need these release compilers.
+The release build test gives each artifact a temporary directory that Go removes after the test.
+It verifies CGO, platform metadata, and the ELF, Mach-O, or PE architecture.
+It also runs Python and JavaScript call chain commands through the native CTX artifact.
+The initial test reproduced the missing CGO failure before the manifest correction.
 
 ## Operator Procedure
 
-Resolve the build blocker before the production operation.
+Complete the local checks before the production operation.
 Commit and push the repository changes to its remote default branch (`master`).
 Use a clean checkout whose `HEAD` equals `origin/master`.
 Keep the installed Gateway and Governor commands on `PATH`.
@@ -64,7 +83,6 @@ Each target checks governance before it calls the installed Gateway with the app
 Release runs `make ci` and seals the declared artifacts.
 Publication uses the sealed artifacts and records their immutable identities.
 Deployment verifies the published binaries and the public documentation marker.
-The former tag publication workflow is removed.
 
 Gateway uses `$HOME/.config/mprlab-gateway` as its default operator root.
 `MPRLAB_GATEWAY_OPERATOR_ROOT` selects another operator root.
@@ -74,30 +92,18 @@ These resources declare no Compose services or application private values.
 ## Evidence Boundaries
 
 Local validation does not prove release, publication, or deployment success.
-This preparation does not create a release receipt or a publication receipt.
-It does not change the live Pages source or publish artifacts.
+A successful cross-platform build proves artifact construction and format.
+It does not prove runtime behavior on Linux, Windows, or a different macOS architecture.
+Native parser tests prove the observed behavior on the test host.
 Record each production result only after its lifecycle operation completes.
 
-## Preparation Evidence
+## Validation Evidence
 
-The preparation date is September 29, 2026.
-The source `HEAD` is `d8fe46f2bbc3d3d9d78448a89e6b0406318069d3`.
-The preparation changes are local and uncommitted.
-The installed Gateway source commit is `70ae14849f19eddc3876d27616ecce50047ba598`.
-The runtime is `v4.7.2` on `darwin-arm64` with lifecycle contract `4`.
-
-| Validation | Result |
-| --- | --- |
-| `make ci` | Passed Go lint, Go tests, and two Puppeteer tests. |
-| Browser environments | Chromium at widths of 390 and 1280 pixels with Node 24. |
-| `make governance-check` | Passed with no drift. |
-| Installed resource and graph validators | Passed for both resources with no remote changes. |
-| Make target declarations | Passed the dry run for all three operations and the executable override. |
-| `make check-release-build` | Failed at the Tree-sitter CGO boundary. |
-| `app-plan-release` | Rejected the uncommitted checkout before manifest capture. |
-| Changed prose | No new mechanical findings. The language review covers the changed text. |
-| Existing prose | 25 mechanical findings remain in unchanged README and architecture text. |
-
-There is no selected release digest or sealed receipt from this preparation.
-The production state revision, owner generation, fences, and observations were not inspected.
-The build failure prevents a ready production handoff.
+The validation date is September 29, 2026.
+The host uses macOS arm64, Go `1.27.1`, Apple Clang, and Zig `0.16.0`.
+`make check-release-build` passed for all four platforms.
+The Linux artifact has no dynamic loader dependency.
+The native artifact passed both language parser checks.
+Installed Gateway `v4.7.3` passed the resource validators and built all four archives in an isolated directory.
+`make ci` passed Go lint, Go tests, and two Chromium browser tests at widths of 390 and 1280 pixels.
+This validation did not run production lifecycle operations.

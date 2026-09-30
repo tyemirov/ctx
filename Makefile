@@ -30,4 +30,4 @@ release publish deploy: governance-check
 	"$(MPRLAB_GATEWAY_EXECUTABLE)" app-$@ --app-root "$(APP_ROOT)"
 
 check-release-build:
-	CGO_ENABLED=0 go build -buildvcs=false -trimpath -o /dev/null .
+	go test -tags releasebuild ./tests -run '^TestReleaseBinaries$$' -count=1 -v

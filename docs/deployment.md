@@ -33,6 +33,9 @@ Gateway publishes that source to `gh-pages` in `tyemirov/ctx`.
 Deployment selects that branch as the GitHub Pages source.
 The public URL is `https://ctx.mprlab.com/`.
 Gateway creates and verifies `/.mprlab-release.json`.
+Gateway also creates `CNAME` from the declared domain and an empty `.nojekyll` file.
+Keep `CNAME`, `.nojekyll`, `.git`, and the verification marker outside the `docs/` source.
+The initial Pages build reproduced the reserved source path failure before removal of `docs/CNAME`.
 
 ## Build Requirements
 
@@ -105,5 +108,7 @@ The host uses macOS arm64, Go `1.27.1`, Apple Clang, and Zig `0.16.0`.
 The Linux artifact has no dynamic loader dependency.
 The native artifact passed both language parser checks.
 Installed Gateway `v4.7.3` passed the resource validators and built all four archives in an isolated directory.
+The installed Pages task passed after removal of the source `CNAME`.
+Its archive contains the declared domain, empty `.nojekyll`, correct release marker, and unchanged `index.html`.
 `make ci` passed Go lint, Go tests, and two Chromium browser tests at widths of 390 and 1280 pixels.
 This validation did not run production lifecycle operations.

@@ -1,59 +1,60 @@
+---
 mprlab_resources:
   owner: ctx
   release:
     scheme: semver
   resources:
-    - kind: github_release_binary
-      id: ctx-cli-linux-amd64
+    ctx-cli-linux-amd64:
+      kind: github_release_binary
       repository: tyemirov/ctx
       build:
         system: go
         package: .
         binary: ctx
         environment:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: '1'
           CC: zig cc -target x86_64-linux-musl
           CGO_LDFLAGS: -static
         platforms:
-          - linux/amd64
-    - kind: github_release_binary
-      id: ctx-cli-darwin-amd64
+        - linux/amd64
+    ctx-cli-darwin-amd64:
+      kind: github_release_binary
       repository: tyemirov/ctx
       build:
         system: go
         package: .
         binary: ctx
         environment:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: '1'
           CC: clang -arch x86_64
         platforms:
-          - darwin/amd64
-    - kind: github_release_binary
-      id: ctx-cli-darwin-arm64
+        - darwin/amd64
+    ctx-cli-darwin-arm64:
+      kind: github_release_binary
       repository: tyemirov/ctx
       build:
         system: go
         package: .
         binary: ctx
         environment:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: '1'
           CC: clang -arch arm64
         platforms:
-          - darwin/arm64
-    - kind: github_release_binary
-      id: ctx-cli-windows-amd64
+        - darwin/arm64
+    ctx-cli-windows-amd64:
+      kind: github_release_binary
       repository: tyemirov/ctx
       build:
         system: go
         package: .
         binary: ctx
         environment:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: '1'
           CC: zig cc -target x86_64-windows-gnu
         platforms:
-          - windows/amd64
-    - kind: github_pages
-      id: ctx-docs
+        - windows/amd64
+    ctx-docs:
+      kind: github_pages
       repository: tyemirov/ctx
       branch: gh-pages
       domain: ctx.mprlab.com

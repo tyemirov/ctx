@@ -4,16 +4,53 @@ mprlab_resources:
     scheme: semver
   resources:
     - kind: github_release_binary
-      id: ctx-cli
+      id: ctx-cli-linux-amd64
       repository: tyemirov/ctx
       build:
         system: go
         package: .
         binary: ctx
+        environment:
+          CGO_ENABLED: "1"
+          CC: zig cc -target x86_64-linux-musl
+          CGO_LDFLAGS: -static
         platforms:
           - linux/amd64
+    - kind: github_release_binary
+      id: ctx-cli-darwin-amd64
+      repository: tyemirov/ctx
+      build:
+        system: go
+        package: .
+        binary: ctx
+        environment:
+          CGO_ENABLED: "1"
+          CC: clang -arch x86_64
+        platforms:
           - darwin/amd64
+    - kind: github_release_binary
+      id: ctx-cli-darwin-arm64
+      repository: tyemirov/ctx
+      build:
+        system: go
+        package: .
+        binary: ctx
+        environment:
+          CGO_ENABLED: "1"
+          CC: clang -arch arm64
+        platforms:
           - darwin/arm64
+    - kind: github_release_binary
+      id: ctx-cli-windows-amd64
+      repository: tyemirov/ctx
+      build:
+        system: go
+        package: .
+        binary: ctx
+        environment:
+          CGO_ENABLED: "1"
+          CC: zig cc -target x86_64-windows-gnu
+        platforms:
           - windows/amd64
     - kind: github_pages
       id: ctx-docs

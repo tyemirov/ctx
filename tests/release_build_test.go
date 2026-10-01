@@ -30,7 +30,7 @@ const (
 
 type releaseBuildManifest struct {
 	Resources struct {
-		Items []struct {
+		Items map[string]struct {
 			Kind  string `yaml:"kind"`
 			Build struct {
 				Package     string            `yaml:"package"`

@@ -3,6 +3,47 @@ mprlab_resources:
   owner: ctx
   release:
     scheme: semver
+  ci:
+    enabled: true
+    command:
+      "0": make
+      "1": ci
+  defaults:
+    timeouts:
+      startup: 2m
+      completion: 30m
+      readiness: 5m
+      request: 30s
+      shutdown: 30s
+  operations:
+    ci:
+      timeouts:
+        completion: 30m
+    app_lifecycle.repository_read:
+      polling: &lifecycle-polling
+        initial: 2s
+        maximum: 15s
+        increment: 2s
+        multiplier: 2
+        attempt_limit: 60
+    app-plan-release: &plan-policy
+      timeouts:
+        completion: 2m
+      polling: *lifecycle-polling
+    app-plan-publish: *plan-policy
+    app-plan-deploy: *plan-policy
+    app-release:
+      timeouts:
+        completion: 30m
+      polling: *lifecycle-polling
+    app-publish:
+      timeouts:
+        completion: 4h
+      polling: *lifecycle-polling
+    app-deploy:
+      timeouts:
+        completion: 20m
+      polling: *lifecycle-polling
   resources:
     ctx-cli-linux-amd64:
       kind: github_release_binary

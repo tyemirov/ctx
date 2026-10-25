@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1E863DZ6LD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-1E863DZ6LD');
+    </script>
+    <script defer src="https://loopaware.mprlab.com/pixel.js?site_id=c85b81af-5856-47b2-b77e-df45ffc26462"></script>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>ctx — Context for Your Codebase in One Command</title>
+    <meta
+      name="description"
+      content="ctx turns any repository into a focused context bundle for humans and AI tools: trees, content, call chains, and documentation in a single CLI."
+    />
+
+    <!-- mpr-ui design system -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/MarcoPoloResearchLab/mpr-ui@latest/mpr-ui.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/MarcoPoloResearchLab/mpr-ui@latest/mpr-ui.js"
+    ></script>
+
+    <style>
+      :root {
+        --bg-main: #050814;
+        --bg-elevated: #070b1c;
+        --bg-subtle: #0a1024;
+        --fg-main: #e5e7eb;
+        --fg-muted: #9ca3af;
+        --accent: #39e9b4;
+        --accent-soft: rgba(57, 233, 180, 0.12);
+        --border-subtle: rgba(148, 163, 184, 0.25);
+        --code-bg: #020617;
+        --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.7);
+        --radius-lg: 18px;
+        --radius-pill: 999px;
+        --font-sans: system-ui, -apple-system, BlinkMacSystemFont,
+          "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+        --font-mono: "JetBrains Mono", "Fira Code", ui-monospace,
+          SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        color-scheme: dark;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body.site {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #0b1020 0, var(--bg-main) 55%);
+        color: var(--fg-main);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #site-header,
+      main,
+      #site-footer {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding-inline: 1.5rem;
+      }
+
+      #site-header {
+        padding-block: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+      }
+
+      .header-brand {
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+      }
+
+      .header-nav {
+        display: flex;
+        gap: 1.25rem;
+      }
+
+      .header-nav a {
+        font-size: 0.9rem;
+        color: var(--fg-muted);
+        text-decoration: none;
+        padding: 0.25rem 0;
+        position: relative;
+      }
+
+      .header-nav a::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -0.1rem;
+        width: 0;
+        height: 1px;
+        background: var(--accent);
+        transition: width 0.18s ease-out;
+      }
+
+      .header-nav a:hover::after {
+        width: 100%;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-mono);
+      }
+
+      h1 {
+        font-size: clamp(2.6rem, 4vw, 3.4rem);
+        line-height: 1.1;
+        margin: 0 0 1rem;
+      }
+
+      h2 {
+        font-size: 1.8rem;
+        margin: 0 0 0.75rem;
+      }
+
+      h3 {
+        font-size: 1.15rem;
+        margin: 0 0 0.5rem;
+      }
+
+      p {
+        margin: 0 0 0.75rem;
+        font-size: 0.98rem;
+        line-height: 1.7;
+      }
+
+      #hero {
+        padding-block: 3.5rem 3rem;
+      }
+
+      .hero-inner {
+        display: grid;
+        gap: 2.5rem;
+      }
+
+      .hero-eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+        margin-bottom: 0.4rem;
+      }
+
+      .hero-title-accent {
+        background: linear-gradient(120deg, var(--accent), #8ee3ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero-subtitle {
+        color: var(--fg-muted);
+        max-width: 34rem;
+      }
+
+      .hero-actions {
+        margin-top: 1.6rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.9rem;
+        align-items: center;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.8rem 1.7rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: transform 0.15s ease, box-shadow 0.15s ease,
+          background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .button-primary {
+        background: linear-gradient(135deg, var(--accent), #1ec5ff);
+        color: #020617;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .button-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 22px 70px rgba(15, 23, 42, 0.85);
+      }
+
+      .button-ghost {
+        background: transparent;
+        color: var(--fg-main);
+        border-color: var(--border-subtle);
+      }
+
+      .button-ghost:hover {
+        background: rgba(15, 23, 42, 0.7);
+      }
+
+      .button-mono {
+        font-family: var(--font-mono);
+      }
+
+      .hero-helper {
+        margin-top: 0.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--fg-muted);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.8rem;
+        border-radius: var(--radius-pill);
+        font-size: 0.78rem;
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        margin-bottom: 0.75rem;
+        color: var(--fg-muted);
+      }
+
+      .pill-badge {
+        display: inline-block;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .hero-code {
+        background: radial-gradient(
+          circle at top left,
+          #111827 0,
+          var(--code-bg) 60%
+        );
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-subtle);
+        padding: 1.1rem 1.1rem 1rem;
+        box-shadow: var(--shadow-soft);
+        position: relative;
+      }
+
+      .hero-code-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.7rem;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--fg-muted);
+      }
+
+      .hero-code-dots {
+        display: inline-flex;
+        gap: 0.3rem;
+      }
+
+      .hero-code-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.6);
+      }
+
+      .hero-code-dot--accent {
+        background: var(--accent);
+      }
+
+      .hero-code pre {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--fg-main);
+        white-space: pre-wrap;
+      }
+
+      .section {
+        padding-block: 3rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      .section-header {
+        margin-bottom: 1.8rem;
+      }
+
+      .section-kicker {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+        margin-bottom: 0.5rem;
+      }
+
+      .section-body {
+        color: var(--fg-muted);
+      }
+
+      .value-grid {
+        display: grid;
+        gap: 1.6rem;
+      }
+
+      .value-card {
+        padding: 1.25rem 1.3rem;
+        border-radius: var(--radius-lg);
+        background: linear-gradient(
+          135deg,
+          rgba(15, 23, 42, 0.7),
+          rgba(3, 7, 18, 0.9)
+        );
+        border: 1px solid rgba(55, 65, 81, 0.85);
+      }
+
+      .value-icon {
+        width: 1.8rem;
+        height: 1.8rem;
+        border-radius: 0.7rem;
+        background: var(--accent-soft);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.7rem;
+        color: var(--accent);
+        font-size: 1.1rem;
+      }
+
+      #get-started .section-body {
+        display: grid;
+        gap: 2rem;
+      }
+
+      .quickstart-panel {
+        background: var(--bg-elevated);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-subtle);
+        padding: 1.4rem 1.5rem;
+      }
+
+      .quickstart-label {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+        margin: 0.75rem 0 0.35rem;
+      }
+
+      .quickstart-panel pre {
+        background: var(--code-bg);
+        border-radius: 0.75rem;
+        padding: 0.7rem 0.8rem;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        margin: 0 0 0.4rem;
+      }
+
+      .quickstart-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.6rem;
+      }
+
+      .quickstart-links a {
+        font-size: 0.9rem;
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      .quickstart-links a:hover {
+        text-decoration: underline;
+      }
+
+      .feature-row {
+        display: grid;
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+        align-items: flex-start;
+      }
+
+      .feature-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .feature-code {
+        background: var(--bg-elevated);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-subtle);
+        padding: 1rem 1.1rem;
+      }
+
+      .feature-code pre {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        background: var(--code-bg);
+        border-radius: 0.75rem;
+        padding: 0.7rem 0.8rem;
+      }
+
+      .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0.75rem 0 0;
+      }
+
+      .feature-list li {
+        margin-bottom: 0.35rem;
+        font-size: 0.95rem;
+      }
+
+      .feature-list li::before {
+        content: "›";
+        display: inline-block;
+        margin-right: 0.4rem;
+        color: var(--accent);
+      }
+
+      .mono {
+        font-family: var(--font-mono);
+      }
+
+      .workflow-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .workflow-item {
+        padding-block: 0.75rem;
+      }
+
+      .workflow-item + .workflow-item {
+        border-top: 1px dashed rgba(148, 163, 184, 0.25);
+      }
+
+      .workflow-item-title {
+        font-weight: 600;
+        font-size: 0.98rem;
+        margin-bottom: 0.3rem;
+      }
+
+      .workflow-item p {
+        color: var(--fg-muted);
+      }
+
+      #site-footer {
+        padding-block: 2rem 3rem;
+        margin-top: 2rem;
+      }
+
+      @media (min-width: 768px) {
+        .hero-inner {
+          grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+          align-items: center;
+        }
+
+        .value-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        #get-started .section-body {
+          grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+          align-items: flex-start;
+        }
+
+        .feature-row {
+          grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        }
+      }
+
+      @media (min-width: 1024px) {
+        #hero {
+          padding-block: 4rem 3.5rem;
+        }
+      }
+    </style>
+    <link rel="icon" href="assets/ctx-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+</head>
+  <body class="site">
+    <header id="site-header">
+      <div class="header-brand"><img src="assets/ctx-icon.svg" alt="" width="32" height="32" style="vertical-align:middle;margin-right:8px;border-radius:6px">ctx</div>
+      <nav class="header-nav" aria-label="Primary navigation">
+        <a href="https://github.com/tyemirov/ctx">GitHub</a>
+        <a href="https://github.com/tyemirov/ctx#installation">Docs</a>
+        <a href="https://github.com/tyemirov/ctx#usage">CLI reference</a>
+      </nav>
+    </header>
+
+    <main>
+      <section id="hero" aria-label="ctx overview">
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <div class="pill">
+              <span class="pill-badge" aria-hidden="true"></span>
+              Proven in day-to-day engineering workflows
+            </div>
+            <p class="hero-eyebrow">CLI for high-signal code context</p>
+            <h1>
+              <span class="hero-title-accent">Context</span> that fits in a
+              single command.
+            </h1>
+            <p class="hero-subtitle">
+              ctx walks your repository once and streams a focused view of the
+              files, call chains, and docs that actually matter. Ship features
+              faster, debug with confidence, and give your AI tools clean,
+              repeatable context instead of screenshots and paste dumps.
+            </p>
+
+            <div class="hero-actions">
+              <a
+                class="button button-primary"
+                href="https://github.com/tyemirov/ctx#installation"
+              >
+                Install ctx
+              </a>
+              <a
+                class="button button-ghost button-mono"
+                href="https://github.com/tyemirov/ctx#readme"
+              >
+                Read the docs
+              </a>
+            </div>
+            <p class="hero-helper">
+              go install github.com/tyemirov/ctx@latest
+            </p>
+          </div>
+
+          <aside class="hero-code" aria-label="ctx terminal example">
+            <div class="hero-code-header">
+              <span>Terminal · ctx</span>
+              <span class="hero-code-dots" aria-hidden="true">
+                <span class="hero-code-dot hero-code-dot--accent"></span>
+                <span class="hero-code-dot"></span>
+                <span class="hero-code-dot"></span>
+              </span>
+            </div>
+            <pre><code class="mono"># Map a new codebase in seconds
+ctx tree . --tokens
+
+# Share a focused context pack with your agent
+ctx content ./internal/cli ./internal/commands \
+  --doc --format toon --tokens</code></pre>
+          </aside>
+        </div>
+      </section>
+
+      <section id="value-props" class="section" aria-label="Why teams use ctx">
+        <div class="section-header">
+          <p class="section-kicker">Why ctx</p>
+          <h2>Built for engineers, friendly to agents</h2>
+          <p class="section-body">
+            ctx is a small Go binary designed to be the context generator for
+            your day-to-day work. It understands directory trees, call chains,
+            documentation, and token budgets so you do not have to maintain
+            ad-hoc scripts or huge copy-paste buffers when pairing with an LLM.
+          </p>
+        </div>
+
+        <div class="value-grid">
+          <article class="value-card">
+            <div class="value-icon" aria-hidden="true">∑</div>
+            <h3>High-signal trees</h3>
+            <p>
+              Summarize any repository with per-directory stats, token
+              estimates, and ignore rules applied. See structure, not just file
+              counts.
+            </p>
+          </article>
+
+          <article class="value-card">
+            <div class="value-icon" aria-hidden="true">⟡</div>
+            <h3>Context-ready content</h3>
+            <p>
+              Stream exactly the files you care about, grouped and ordered with
+              optional documentation, ready for reviews or prompt windows.
+            </p>
+          </article>
+
+          <article class="value-card">
+            <div class="value-icon" aria-hidden="true">λ</div>
+            <h3>Callchain navigation</h3>
+            <p>
+              Follow behaviour across packages with
+              <span class="mono">ctx callchain</span> and understand who calls
+              what without juggling IDE tabs or grep scripts.
+            </p>
+          </article>
+
+          <article class="value-card">
+            <div class="value-icon" aria-hidden="true">⚡</div>
+            <h3>Docs-aware agents</h3>
+            <p>
+              Use <span class="mono">ctx doc</span> to pull real documentation
+              for your dependencies and feed both code and docs into your AI
+              workflows in a single pass.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section
+        id="get-started"
+        class="section"
+        aria-label="Get started with ctx"
+      >
+        <div class="section-header">
+          <p class="section-kicker">Getting started</p>
+          <h2>Get started in minutes</h2>
+        </div>
+        <div class="section-body">
+          <div>
+            <p>
+              ctx is a self-contained Go binary that fits next to your editor,
+              issue tracker, and agent stack. Install it once, commit a couple
+              of commands to your repo, and every engineer and agent gets the
+              same trustworthy view of the codebase.
+            </p>
+            <p>
+              Use it interactively when exploring an unfamiliar system, or
+              script it in CI to capture a high-signal snapshot for difficult
+              regressions, releases, and incident reviews.
+            </p>
+          </div>
+          <aside class="quickstart-panel" aria-label="Quickstart commands">
+            <p class="quickstart-label">Install</p>
+            <pre><code>go install github.com/tyemirov/ctx@latest</code></pre>
+
+            <p class="quickstart-label">First look</p>
+            <pre><code># High-level structure + token estimates
+ctx tree . --tokens</code></pre>
+
+            <p class="quickstart-label">Focused context</p>
+            <pre><code># Stream the parts of the app you care about
+ctx content internal/cli internal/commands --doc --tokens</code></pre>
+
+            <div class="quickstart-links">
+              <a href="https://github.com/tyemirov/ctx#usage">CLI usage →</a>
+              <a href="https://github.com/tyemirov/ctx#configuration"
+                >Configuration →</a
+              >
+              <a href="https://github.com/tyemirov/ctx#doc"
+                >MCP &amp; docs integration →</a
+              >
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section
+        id="deep-features"
+        class="section"
+        aria-label="Core ctx capabilities"
+      >
+        <div class="section-header">
+          <p class="section-kicker">Core capabilities</p>
+          <h2>Four commands, one mental model</h2>
+          <p class="section-body">
+            ctx is intentionally small. Each command focuses on a single kind of
+            context, and all of them share the same ignore rules, output
+            formats, and documentation settings.
+          </p>
+        </div>
+
+        <div class="feature-row">
+          <div>
+            <h3>See the structure, not just the size</h3>
+            <p>
+              Use <span class="mono">ctx tree</span> to summarize repositories,
+              filter generated noise, and get per-directory token estimates.
+              Ideal for onboarding, pull request reviews, and
+              &ldquo;what even is this repo?&rdquo; moments.
+            </p>
+            <ul class="feature-list">
+              <li>
+                Respects <span class="mono">.gitignore</span> and
+                <span class="mono">.ignore</span> files at every directory
+                level.
+              </li>
+              <li>Streams output so large repositories stay responsive.</li>
+              <li>
+                Generates Toon, JSON, or XML output for humans and automation.
+              </li>
+            </ul>
+          </div>
+          <div class="feature-code" aria-label="tree and content example">
+            <pre><code># High-signal tree view
+ctx tree projectA projectB -e dist --tokens
+
+# Stream the files that matter
+ctx content internal/cli internal/commands \
+  --doc --format toon --tokens</code></pre>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div>
+            <h3>Trace behaviour with call chains</h3>
+            <p>
+              Follow the flow of a feature across packages with
+              <span class="mono">ctx callchain</span>. See callers, callees, and
+              documentation in one streaming view that fits comfortably in a
+              prompt window.
+            </p>
+          </div>
+          <div class="feature-code" aria-label="callchain example">
+            <pre><code># Follow GetContentData and its callers
+ctx callchain github.com/tyemirov/ctx/internal/commands.GetContentData \
+  --depth 2 --doc --format toon</code></pre>
+          </div>
+        </div>
+
+        <div class="feature-row">
+          <div>
+            <h3>Harvest real documentation, not guesswork</h3>
+            <p>
+              Run <span class="mono">ctx doc</span> to collect READMEs and
+              external docs for your Go, JavaScript, and Python dependencies.
+              Bundle them alongside your code so humans and agents always see
+              the &ldquo;why&rdquo;, not just the &ldquo;what&rdquo;.
+            </p>
+          </div>
+          <div class="feature-code" aria-label="doc discovery example">
+            <pre><code># Discover and snapshot dependency docs
+ctx doc discover . --ecosystems go,js,python \
+  --output-dir docs/dependencies</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="workflows"
+        class="section"
+        aria-label="How ctx fits into your workflow"
+      >
+        <div class="section-header">
+          <p class="section-kicker">Workflows</p>
+          <h2>Where ctx fits best</h2>
+          <p class="section-body">
+            ctx is designed to live next to your editor, issue tracker, and
+            agent stack. You decide how much context to collect; ctx keeps it
+            consistent and reproducible.
+          </p>
+        </div>
+
+        <ul class="workflow-list">
+          <li class="workflow-item">
+            <div class="workflow-item-title">Code review companion</div>
+            <p>
+              Attach a ctx snapshot to tricky pull requests so reviewers see the
+              surrounding call chains, related files, and docs without leaving
+              the diff.
+            </p>
+          </li>
+          <li class="workflow-item">
+            <div class="workflow-item-title">Onboarding accelerator</div>
+            <p>
+              Commit a small script that runs your go-to ctx commands. New
+              engineers run one command and get a guided tour of the repo
+              structure, key flows, and external docs in minutes.
+            </p>
+          </li>
+          <li class="workflow-item">
+            <div class="workflow-item-title">Agent context generator</div>
+            <p>
+              Make ctx the front door for any AI system that needs to understand
+              your codebase. It collects high-signal context; your agents focus
+              on reasoning.
+            </p>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <mpr-footer
+      id="site-footer"
+      prefix-text="ctx — context for humans and agents."
+      menu='{"label":"Resources","placement":"top","sections":[{"id":"resources","label":"Resources","mode":"static","links":[
+        {"label":"GitHub","href":"https://github.com/tyemirov/ctx"},
+        {"label":"Docs","href":"https://github.com/tyemirov/ctx#readme"},
+        {"label":"Changelog","href":"https://github.com/tyemirov/ctx/blob/master/CHANGELOG.md"},
+        {"label":"Community","href":"https://mprlab.com"}
+      ]}]}'
+      privacy-link-label="MIT License"
+      privacy-link-href="https://github.com/tyemirov/ctx/blob/master/MIT-LICENSE"
+      privacy-modal-content="
+        &lt;h1&gt;MIT License — ctx&lt;/h1&gt;
+        &lt;p&gt;&lt;strong&gt;Copyright (c) 2025&lt;/strong&gt;
+        Vadym Tyemirov&lt;/p&gt;
+        &lt;p&gt;Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the &quot;Software&quot;), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:&lt;/p&gt;
+        &lt;p&gt;The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.&lt;/p&gt;
+        &lt;p&gt;THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.&lt;/p&gt;
+      "
+      sticky="false"
+    >
+    </mpr-footer>
+  </body>
+</html>
